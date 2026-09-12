@@ -25,7 +25,23 @@ export const VOTE_NSID = 'com.shitsky38.vote'
 export const PROFILE_NSID = 'com.shitsky38.profile'
 export const SCOPE = 'atproto transition:generic'
 
-const publicUrl = new URL(env('PUBLIC_URL', 'http://127.0.0.1:3000'))
+// A deploy platform hands you a bare hostname, so that is what people paste. Accept it, and
+// say plainly what went wrong when the value is not a URL at all.
+const parsePublicUrl = (value) => {
+  const trimmed = String(value).trim()
+  const hasScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)
+  const candidate = hasScheme ? trimmed : `https://${trimmed}`
+  let parsed
+  try {
+    parsed = new URL(candidate)
+  } catch {
+    throw new Error(`PUBLIC_URL is not a valid URL: ${JSON.stringify(trimmed)}`)
+  }
+  if (!hasScheme) console.warn(`[config] PUBLIC_URL had no scheme — reading it as ${parsed.origin}`)
+  return parsed
+}
+
+const publicUrl = parsePublicUrl(env('PUBLIC_URL', 'http://127.0.0.1:3000'))
 
 // atproto has a development mode for clients served from loopback: the client_id is the
 // literal string `http://localhost` with the metadata passed as query parameters, and no

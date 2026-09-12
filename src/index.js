@@ -20,9 +20,10 @@ if (major === 22 || (major === 23 && minor < 4)) {
 }
 
 // Fail fast on bad configuration, before anything opens a socket. A deploy log deserves a
-// sentence it can act on, not a stack trace.
-const { assertConfig } = await import('./config.js')
+// sentence it can act on, not a stack trace — and config.js can throw while it is still being
+// imported, so the import belongs inside the guard too.
 try {
+  const { assertConfig } = await import('./config.js')
   assertConfig()
 } catch (err) {
   console.error(`Configuration error: ${err.message}`)
