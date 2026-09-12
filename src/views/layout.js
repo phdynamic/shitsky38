@@ -1,5 +1,6 @@
 import { html, raw } from './html.js'
 import { config, votingState } from '../config.js'
+import { asset } from '../assets.js'
 
 const navItems = [
   ['/', 'Leaderboard'],
@@ -26,7 +27,7 @@ export const layout = ({ title, viewer, path = '/', body, head = '' }) => html`<
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${title ? `${title} · ${config.siteName}` : config.siteName}</title>
     <meta name="description" content="The ${config.listSize} best shitposters on Bluesky, voted by you. Votes are public records in your own account." />
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="${asset('/styles.css')}" />
     <link rel="icon" href="/favicon.svg" />
     ${raw(head)}
   </head>
@@ -69,6 +70,6 @@ export const layout = ({ title, viewer, path = '/', body, head = '' }) => html`<
         <a class="kofi" href="https://ko-fi.com/professorkiosk" rel="noopener">buy me a coffee on Ko-fi ☕</a>.
       </p>
     </footer>
-    <script src="/app.js" type="module"></script>
+    <script src="${asset('/app.js')}" type="module"></script>
   </body>
 </html>`
