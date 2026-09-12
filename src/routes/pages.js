@@ -99,8 +99,6 @@ pagesRouter.get('/profile/:actor', async (req, res) => {
   const actor = (await hydrate([did])).get(did) ?? { did }
   const entry = store.standing(did)
   const nominee = store.getNomineeProfile(did)
-  const voters = store.votersFor(did, 60)
-  const voterActors = await hydrate(voters.map((voter) => voter.voter_did))
   const pinned = nominee?.pinnedPost ? (await getPosts([nominee.pinnedPost])).get(nominee.pinnedPost) : null
   const ballot = req.viewerDid ? store.getBallot(req.viewerDid) : []
 
@@ -116,8 +114,6 @@ pagesRouter.get('/profile/:actor', async (req, res) => {
         viewer,
         voted: ballot.some((item) => item.subject_did === did),
         outOfVotes: ballot.length >= config.maxVotes,
-        voters,
-        voterActors,
         pinned,
         isSelf,
         nominee,

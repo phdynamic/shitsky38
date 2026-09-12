@@ -230,14 +230,6 @@ const totalsStmt = stmt(`
          (SELECT COUNT(*) FROM tally)                          AS nominees
 `)
 
-const votersForStmt = stmt(`
-  ${ELIGIBLE}
-  SELECT voter_did, created_at FROM eligible
-  WHERE subject_did = :did
-  ORDER BY created_at ASC
-  LIMIT :limit
-`)
-
 export const leaderboard = ({ limit = config.listSize, offset = 0 } = {}) =>
   leaderboardStmt().all({ ...bounds(), limit, offset })
 
@@ -247,8 +239,6 @@ export const topList = () => topListStmt().all({ ...bounds(), list_size: config.
 export const standing = (did) => standingStmt().get({ ...bounds(), did }) ?? null
 
 export const totals = () => totalsStmt().get(bounds()) ?? { votes: 0, voters: 0, nominees: 0 }
-
-export const votersFor = (did, limit = 60) => votersForStmt().all({ ...bounds(), did, limit })
 
 /* --------------------------------------------------------------- actors ---- */
 

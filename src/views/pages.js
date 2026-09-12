@@ -196,7 +196,7 @@ export const votePage = ({ viewer, ballot, actors, query }) => html`
 
 /* --------------------------------------------------------------- profile ---- */
 
-export const profilePage = ({ actor, entry, viewer, voted, outOfVotes, voters, voterActors, pinned, isSelf, nominee }) => html`
+export const profilePage = ({ actor, entry, viewer, voted, outOfVotes, pinned, isSelf, nominee }) => html`
   <section class="profile">
     ${avatar(actor, 'lg')}
     <div class="profile-meta">
@@ -227,20 +227,6 @@ export const profilePage = ({ actor, entry, viewer, voted, outOfVotes, voters, v
     : ''}
 
   ${isSelf ? selfControls({ nominee }) : ''}
-
-  <section class="voters">
-    <h2>Voted for by</h2>
-    ${voters.length === 0
-      ? html`<p class="muted">Nobody yet.</p>`
-      : html`<ul class="voter-list">
-          ${voters.map((voter) => {
-            const va = voterActors.get(voter.voter_did) ?? { did: voter.voter_did }
-            return html`<li>
-              <a href="/profile/${voter.voter_did}">${avatar(va, 'sm')}<span>${displayName(va)}</span></a>
-            </li>`
-          })}
-        </ul>`}
-  </section>
 `
 
 const selfControls = ({ nominee }) => html`<section class="self-controls">
