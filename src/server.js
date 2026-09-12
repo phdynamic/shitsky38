@@ -10,6 +10,7 @@ import { layout } from './views/layout.js'
 import { errorPage, notFoundPage } from './views/pages.js'
 import { startJetstream } from './jetstream.js'
 import { oauthClient } from './oauth.js'
+import { refreshCreator } from './creator.js'
 
 const app = express()
 app.disable('x-powered-by')
@@ -48,6 +49,11 @@ const server = app.listen(config.port, () => {
 })
 
 const stopJetstream = startJetstream()
+
+// Keep the footer's profile current without making every page render wait on the AppView.
+refreshCreator()
+const creatorRefresh = setInterval(refreshCreator, 6 * 60 * 60 * 1000)
+creatorRefresh.unref()
 const sweeper = setInterval(sweepOauthState, 15 * 60 * 1000)
 sweeper.unref()
 

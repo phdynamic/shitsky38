@@ -9,6 +9,9 @@ import { faqPage, leaderboardPage, mePage, notFoundPage, profilePage, votePage }
 
 export const pagesRouter = Router()
 
+// How many past the cut to render up front, and to add on each press of Load more.
+const PAGE_SIZE = 24
+
 const viewerOf = async (req) => {
   if (!req.viewerDid) return null
   const actor = (await hydrate([req.viewerDid])).get(req.viewerDid)
@@ -19,17 +22,27 @@ const send = (res, page) => res.type('html').send(page.toString())
 
 pagesRouter.get('/', async (req, res) => {
   const entries = store.leaderboard({ limit: config.listSize })
-  const bubble = store.leaderboard({ limit: 24, offset: config.listSize })
+  const rest = store.leaderboard({ limit: PAGE_SIZE, offset: config.listSize })
   const viewer = await viewerOf(req)
   const ballot = req.viewerDid ? store.getBallot(req.viewerDid) : []
-  const actors = await hydrate([...entries, ...bubble].map((entry) => entry.did))
+  const actors = await hydrate([...entries, ...rest].map((entry) => entry.did))
+  const stats = store.totals()
 
   send(
     res,
     layout({
       viewer,
       path: '/',
-      body: leaderboardPage({ entries, bubble, actors, stats: store.totals(), viewer, ballot }),
+      body: leaderboardPage({
+        entries,
+        rest,
+        actors,
+        stats,
+        viewer,
+        ballot,
+        hasMore: stats.nominees > config.listSize + rest.length,
+        pageSize: PAGE_SIZE,
+      }),
     }),
   )
 })

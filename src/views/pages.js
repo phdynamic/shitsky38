@@ -44,16 +44,16 @@ const row = ({ entry, actor, viewer, voted, outOfVotes }) => html`<li class="row
 
 /* ----------------------------------------------------------- leaderboard ---- */
 
-export const leaderboardPage = ({ entries, bubble, actors, stats, viewer, ballot }) => {
+export const leaderboardPage = ({ entries, rest, actors, stats, viewer, ballot, hasMore, pageSize }) => {
   const voted = new Set(ballot.map((b) => b.subject_did))
   const outOfVotes = ballot.length >= config.maxVotes
 
   return html`
     <section class="hero">
-      <h1>The ${config.listSize} best shitposters on Bluesky</h1>
+      <h1>The ${config.listSize} "best" shitposters on Bluesky</h1>
       <p class="lede">
-        Annual list, voted by you. Everybody gets ${config.maxVotes} votes. The ${config.listSize} accounts with
-        the most votes make the list. No merit involved.
+        Voted by you. Everybody gets ${config.maxVotes} votes. The ${config.listSize} accounts with the
+        most votes make the list. No merit involved.
       </p>
       <dl class="stats">
         <div><dt>votes cast</dt><dd>${num(stats.votes)}</dd></div>
@@ -87,12 +87,12 @@ export const leaderboardPage = ({ entries, bubble, actors, stats, viewer, ballot
           )}
         </ol>`}
 
-    ${bubble.length > 0
-      ? html`<section class="bubble">
+    ${rest.length > 0
+      ? html`<section class="rest">
           <h2>On the bubble</h2>
-          <p class="muted">Close, but not in the ${config.listSize}. Yet.</p>
-          <ol class="board dim">
-            ${bubble.map((entry) =>
+          <p class="muted">Below the cut — for now.</p>
+          <ol class="board dim" id="rest-board">
+            ${rest.map((entry) =>
               row({
                 entry,
                 actor: actors.get(entry.did) ?? { did: entry.did },
@@ -102,6 +102,16 @@ export const leaderboardPage = ({ entries, bubble, actors, stats, viewer, ballot
               }),
             )}
           </ol>
+          ${hasMore
+            ? html`<button
+                class="btn btn-ghost load-more"
+                id="load-more"
+                data-offset="${config.listSize + rest.length}"
+                data-limit="${pageSize}"
+              >
+                Load ${pageSize} more
+              </button>`
+            : ''}
         </section>`
       : ''}
   `
@@ -305,7 +315,7 @@ export const faqPage = () => {
   const items = [
     [
       'What is this?',
-      html`A community-voted list of the ${config.listSize} best shitposters on Bluesky. It is fun and silly and
+      html`A community-voted list of the ${config.listSize} "best" shitposters on Bluesky. It is fun and silly and
       means nothing. It is not run by Bluesky.`,
     ],
     [

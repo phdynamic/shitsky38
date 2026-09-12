@@ -1,6 +1,6 @@
 # Shitsky38
 
-The 38 best shitposters on Bluesky, voted by you — a community leaderboard in the shape of
+The 38 "best" shitposters on Bluesky, voted by you — a community leaderboard in the shape of
 [bsky38.com](https://bsky38.com), for a less prestigious honour.
 
 Everybody gets 10 votes. Each vote is a **public record in the voter's own atproto repo**, not a row

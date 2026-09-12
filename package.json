@@ -2,7 +2,7 @@
   "name": "shitsky38",
   "version": "0.1.0",
   "private": true,
-  "description": "The 38 best shitposters on Bluesky, voted by you. Votes live in your own atproto repo.",
+  "description": "The 38 \"best\" shitposters on Bluesky, voted by you. Votes live in your own atproto repo.",
   "type": "module",
   "engines": {
     "node": ">=22.5.0"

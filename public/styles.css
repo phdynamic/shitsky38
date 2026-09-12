@@ -35,7 +35,11 @@ body {
 }
 
 a { color: inherit; }
-.lede a, .you-have a, footer a, .faq a, .empty a, .profile-meta .handle a:hover { color: var(--link); }
+/* Body links read as links — but never repaint a button's label, which must stay legible
+   against the button's own fill. */
+.lede a:not(.btn), .you-have a:not(.btn), footer a:not(.btn), .faq a:not(.btn),
+.empty a:not(.btn), .profile-meta .handle a:hover { color: var(--link); }
+a.btn { color: var(--accent-ink); }
 h1, h2 { line-height: 1.1; letter-spacing: -0.02em; }
 code { font-family: var(--mono); font-size: 0.9em; background: var(--bg-soft); padding: 0.1em 0.35em; border-radius: 5px; }
 .muted { color: var(--ink-dim); }
@@ -364,7 +368,27 @@ footer p { margin: 0.4rem 0; }
   .stats { gap: 1.5rem; }
 }
 
-.credit { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+.credit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+}
 .credit a { color: var(--link); text-decoration: none; }
 .credit a:hover { text-decoration: underline; }
+.credit-who { display: flex; align-items: center; gap: 0.5rem; color: var(--ink-dim) !important; }
+.credit-who b { color: var(--ink); font-weight: 700; }
+.credit-who .handle { font-size: 0.85em; }
 .credit .kofi { color: var(--gold); font-weight: 600; white-space: nowrap; }
+
+.load-more {
+  display: block;
+  margin: 1rem auto 0;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-dim);
+}
+.load-more:hover { border-color: var(--accent); color: var(--ink); filter: none; }

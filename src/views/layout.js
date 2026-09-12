@@ -1,6 +1,7 @@
 import { html, raw } from './html.js'
 import { config, votingState } from '../config.js'
 import { asset } from '../assets.js'
+import { CREATOR_KOFI, creator } from '../creator.js'
 
 const navItems = [
   ['/', 'Leaderboard'],
@@ -26,12 +27,16 @@ export const layout = ({ title, viewer, path = '/', body, head = '' }) => html`<
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${title ? `${title} · ${config.siteName}` : config.siteName}</title>
-    <meta name="description" content="The ${config.listSize} best shitposters on Bluesky, voted by you. Votes are public records in your own account." />
+    <meta name="description" content="The ${config.listSize} &quot;best&quot; shitposters on Bluesky, voted by you. Votes are public records in your own account." />
     <link rel="stylesheet" href="${asset('/styles.css')}" />
     <link rel="icon" href="/favicon.svg" />
     ${raw(head)}
   </head>
-  <body data-signed-in="${viewer ? 'true' : 'false'}">
+  <body
+    data-signed-in="${viewer ? 'true' : 'false'}"
+    data-list-size="${config.listSize}"
+    data-voting-open="${votingState() === 'open' ? 'true' : 'false'}"
+  >
     <header class="topbar">
       <a class="wordmark" href="/">
         <span class="wordmark-shit">Shitsky</span><span class="wordmark-num">38</span>
@@ -63,12 +68,18 @@ export const layout = ({ title, viewer, path = '/', body, head = '' }) => html`<
         <a href="/lexicons">Lexicons</a> ·
         <a href="https://bsky.app">Bluesky</a>
       </p>
-      <p class="credit">
-        Made by
-        <a href="https://bsky.app/profile/professorkiosk.wtf" rel="noopener">Professor Kiosk (@professorkiosk.wtf)</a>.
-        If you would like to support the effort,
-        <a class="kofi" href="https://ko-fi.com/professorkiosk" rel="noopener">buy me a coffee on Ko-fi ☕</a>.
-      </p>
+      <div class="credit">
+        <a class="credit-who" href="https://bsky.app/profile/${creator().handle}" rel="noopener">
+          ${creator().avatar
+            ? html`<img class="avatar sm" src="${creator().avatar}" alt="" loading="lazy" />`
+            : html`<span class="avatar sm placeholder" aria-hidden="true">P</span>`}
+          <span>Made by <b>${creator().displayName}</b> <span class="handle">@${creator().handle}</span></span>
+        </a>
+        <span class="credit-support">
+          If you would like to support the effort,
+          <a class="kofi" href="${CREATOR_KOFI}" rel="noopener">buy me a coffee on Ko-fi ☕</a>
+        </span>
+      </div>
     </footer>
     <script src="${asset('/app.js')}" type="module"></script>
   </body>

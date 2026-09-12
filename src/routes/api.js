@@ -80,17 +80,25 @@ apiRouter.get('/leaderboard', async (req, res) => {
     const offset = Math.max(Number(req.query.offset) || 0, 0)
     const entries = store.leaderboard({ limit, offset })
     const actors = await hydrate(entries.map((entry) => entry.did))
+    const totals = store.totals()
+    const ballot = req.viewerDid ? store.getBallot(req.viewerDid).map((b) => b.subject_did) : []
     res.json({
       listSize: config.listSize,
       votingState: votingState(),
       closesAt: config.votingClosesAt.toISOString(),
-      totals: store.totals(),
+      totals,
+      votesUsed: ballot.length,
+      maxVotes: config.maxVotes,
+      hasMore: offset + entries.length < totals.nominees,
+      nextOffset: offset + entries.length,
       entries: entries.map((entry) => ({
         rank: entry.rank,
         votes: entry.votes,
         did: entry.did,
         handle: actors.get(entry.did)?.handle ?? null,
         displayName: actors.get(entry.did)?.displayName ?? null,
+        avatar: actors.get(entry.did)?.avatar ?? null,
+        voted: ballot.includes(entry.did),
       })),
     })
   } catch (err) {
