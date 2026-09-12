@@ -64,7 +64,6 @@ export const layout = ({ title, viewer, path = '/', body, head = '' }) => html`<
       </p>
       <p class="muted">
         <a href="/faq">How it works</a> ·
-        <a href="/lexicons">Lexicons</a> ·
         <a href="https://bsky.app">Bluesky</a>
       </p>
     </footer>
