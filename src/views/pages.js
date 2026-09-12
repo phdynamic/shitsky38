@@ -117,7 +117,7 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, hasMor
             data-offset="${nextOffset}"
             data-limit="${pageSize}"
           >
-            Load ${pageSize} more
+            Load more
           </button>
         </section>`
       : ''}
