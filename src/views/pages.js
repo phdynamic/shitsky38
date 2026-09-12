@@ -53,7 +53,8 @@ export const leaderboardPage = ({ entries, rest, actors, stats, viewer, ballot, 
       <h1>The ${config.listSize} "best" shitposters on Bluesky</h1>
       <p class="lede">
         Voted by you. Everybody gets ${config.maxVotes} votes. The ${config.listSize} accounts with the
-        most votes make the list. No merit involved.
+        most votes make the list. No merit involved. There are no prizes and bragging rights are probably
+        of minimal value at best.
       </p>
       <dl class="stats">
         <div><dt>votes cast</dt><dd>${num(stats.votes)}</dd></div>
