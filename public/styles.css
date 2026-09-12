@@ -296,7 +296,6 @@ footer p { margin: 0.4rem 0; }
 .pinned p { margin: 0 0 0.6rem; white-space: pre-wrap; font-size: 1.05rem; }
 .pinned cite { font-style: normal; font-size: 0.8rem; color: var(--ink-dim); }
 
-
 .self-controls {
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -351,30 +350,12 @@ footer p { margin: 0.4rem 0; }
 .toast.out { opacity: 0; transform: translateY(8px); }
 
 @media (max-width: 620px) {
-  .credit-sep { display: none; }
   .topbar { gap: 0.75rem; }
   .topbar nav { order: 3; width: 100%; flex-basis: 100%; }
   .rank { min-width: 1.75rem; font-size: 0.95rem; }
   .btn-vote { min-width: 4.5rem; padding: 0.45rem 0.8rem; }
   .stats { gap: 1.5rem; }
 }
-
-.credit {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem 1rem;
-  flex-wrap: wrap;
-  margin-top: 0.9rem;
-  padding-top: 0.9rem;
-  border-top: 1px solid var(--line);
-}
-.credit a { color: var(--link); text-decoration: none; }
-.credit a:hover { text-decoration: underline; }
-.credit-who { display: flex; align-items: center; gap: 0.5rem; color: var(--ink-dim) !important; }
-.credit-who b { color: var(--ink); font-weight: 700; }
-.credit-who .handle { font-size: 0.85em; }
-.credit .kofi { color: var(--gold); font-weight: 600; white-space: nowrap; }
-.credit-sep { color: var(--ink-dim); }
 
 .load-more {
   display: block;
