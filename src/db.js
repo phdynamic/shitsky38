@@ -4,9 +4,21 @@ import { dirname, resolve } from 'node:path'
 import { config } from './config.js'
 
 const file = resolve(config.dbPath)
-mkdirSync(dirname(file), { recursive: true })
 
-export const db = new DatabaseSync(file)
+let database
+try {
+  mkdirSync(dirname(file), { recursive: true })
+  database = new DatabaseSync(file)
+} catch (err) {
+  // The usual cause on a platform is a volume that is not mounted where DB_PATH expects it,
+  // which otherwise surfaces as an unexplained crash loop.
+  throw new Error(
+    `Cannot open the database at ${file} (${err.code ?? err.message}). ` +
+      `Mount a writable volume at ${dirname(file)}, or point DB_PATH somewhere writable.`,
+  )
+}
+
+export const db = database
 db.exec('PRAGMA journal_mode = WAL')
 db.exec('PRAGMA busy_timeout = 5000')
 

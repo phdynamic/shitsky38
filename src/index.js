@@ -29,4 +29,9 @@ try {
   process.exit(1)
 }
 
-await import('./server.js')
+try {
+  await import('./server.js')
+} catch (err) {
+  console.error(`Startup error: ${err.message}`)
+  process.exit(1)
+}
