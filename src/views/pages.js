@@ -44,7 +44,7 @@ const row = ({ entry, actor, viewer, voted, outOfVotes }) => html`<li class="row
 
 /* ----------------------------------------------------------- leaderboard ---- */
 
-export const leaderboardPage = ({ entries, rest, actors, stats, viewer, ballot, hasMore, nextOffset, pageSize }) => {
+export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, hasMore, nextOffset, pageSize }) => {
   const voted = new Set(ballot.map((b) => b.subject_did))
   const outOfVotes = ballot.length >= config.maxVotes
 
@@ -107,31 +107,18 @@ export const leaderboardPage = ({ entries, rest, actors, stats, viewer, ballot, 
           )}
         </ol>`}
 
-    ${rest.length > 0
+    ${hasMore
       ? html`<section class="rest">
-          <h2>On the bubble</h2>
-          <p class="muted">Below the cut — for now.</p>
-          <ol class="board dim" id="rest-board">
-            ${rest.map((entry) =>
-              row({
-                entry,
-                actor: actors.get(entry.did) ?? { did: entry.did },
-                viewer,
-                voted: voted.has(entry.did),
-                outOfVotes,
-              }),
-            )}
-          </ol>
-          ${hasMore
-            ? html`<button
-                class="btn btn-ghost load-more"
-                id="load-more"
-                data-offset="${nextOffset}"
-                data-limit="${pageSize}"
-              >
-                Load ${pageSize} more
-              </button>`
-            : ''}
+          <h2 id="rest-heading" hidden>On the bubble</h2>
+          <ol class="board dim" id="rest-board"></ol>
+          <button
+            class="btn btn-ghost load-more"
+            id="load-more"
+            data-offset="${nextOffset}"
+            data-limit="${pageSize}"
+          >
+            Load ${pageSize} more
+          </button>
         </section>`
       : ''}
   `

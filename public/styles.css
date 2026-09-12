@@ -248,9 +248,13 @@ footer p { margin: 0.4rem 0; }
 .pip { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--line); background: transparent; }
 .pip.on { background: var(--accent); border-color: var(--accent); }
 
-.search { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; }
+.search { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .search input {
-  flex: 1;
+  flex: 1 1 12rem;
+  /* A text input carries an intrinsic minimum width, and a flex item will not shrink below it.
+     Without this the field holds its size on a narrow screen and pushes the button out of the
+     panel. */
+  min-width: 0;
   background: var(--bg-card);
   border: 1px solid var(--line);
   border-radius: 999px;

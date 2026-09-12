@@ -195,6 +195,8 @@ loadMore?.addEventListener('click', async () => {
     for (const entry of data.entries) {
       restBoard.append(buildRow(entry, { rank: entry.rank, votesUsed: data.votesUsed, maxVotes: data.maxVotes }))
     }
+    const heading = document.querySelector('#rest-heading')
+    if (heading && data.entries.length > 0) heading.hidden = false
 
     if (data.hasMore && data.entries.length > 0) {
       loadMore.dataset.offset = String(data.nextOffset)

@@ -22,10 +22,9 @@ const send = (res, page) => res.type('html').send(page.toString())
 
 pagesRouter.get('/', async (req, res) => {
   const entries = store.topList()
-  const rest = store.leaderboard({ limit: PAGE_SIZE, offset: entries.length })
   const viewer = await viewerOf(req)
   const ballot = req.viewerDid ? store.getBallot(req.viewerDid) : []
-  const actors = await hydrate([...entries, ...rest].map((entry) => entry.did))
+  const actors = await hydrate(entries.map((entry) => entry.did))
   const stats = store.totals()
 
   send(
@@ -35,13 +34,12 @@ pagesRouter.get('/', async (req, res) => {
       path: '/',
       body: leaderboardPage({
         entries,
-        rest,
         actors,
         stats,
         viewer,
         ballot,
-        hasMore: stats.nominees > entries.length + rest.length,
-        nextOffset: entries.length + rest.length,
+        hasMore: stats.nominees > entries.length,
+        nextOffset: entries.length,
         pageSize: PAGE_SIZE,
       }),
     }),
