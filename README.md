@@ -74,15 +74,25 @@ Run **one** instance. The token-refresh lock is in-process and the database is l
    Leave `PORT` alone — Railway injects it. `COOKIE_SECRET` and `PRIVATE_KEY_n` can stay empty:
    on first boot the app mints them and stores them on the volume. Set them explicitly (via
    `npm run keygen`) if you would rather the deploy be stateless in that respect.
-4. Add `shitsky38.com` under **Settings → Networking → Custom Domain** and point DNS at the
-   CNAME Railway gives you.
+4. Add `shitsky38.com` under **Settings → Networking → Custom Domain**, point DNS at the CNAME
+   Railway gives you, **then set `PUBLIC_URL` to `https://shitsky38.com` and redeploy**. Railway
+   drops the generated `*.up.railway.app` domain when a custom one is attached, so a `PUBLIC_URL`
+   still pointing at it leaves the site up and sign-in broken for everyone: each PDS reads the
+   metadata, is told the client lives at the old URL, and gets a 404.
 
 `PUBLIC_URL` is not cosmetic — it *is* the OAuth `client_id`, because the client id is the URL the
 metadata is served from. Changing it changes the client's identity, so every existing session has to
 sign in again. Pick the final domain before telling people about it.
 
 Once it is up, check `https://your-domain/client-metadata.json` and `/jwks.json` load from the public
-internet. Every PDS fetches both during sign-in, so if they 404, nobody can log in.
+internet. Every PDS fetches both during sign-in, so if they 404, nobody can log in. The app checks
+this itself ten seconds after boot and prints either
+
+```
+[selfcheck] client metadata reachable at https://shitsky38.com/client-metadata.json
+```
+
+or a `SIGN-IN IS BROKEN` line naming what is wrong.
 
 ### Endpoints
 
