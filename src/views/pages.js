@@ -1,5 +1,6 @@
 import { html } from './html.js'
 import { config, votingState } from '../config.js'
+import { CREATOR_KOFI, creator } from '../creator.js'
 
 const nf = new Intl.NumberFormat('en-US')
 const num = (value) => nf.format(value ?? 0)
@@ -310,6 +311,15 @@ export const faqPage = () => {
       'What is this?',
       html`A community-voted list of the ${config.listSize} "best" shitposters on Bluesky. It is fun and silly and
       means nothing. It is not run by Bluesky.`,
+    ],
+    [
+      'Who made this, and how can I support it?',
+      html`${creator().displayName} —
+      <a href="https://bsky.app/profile/${creator().handle}" rel="noopener">@${creator().handle}</a> on Bluesky.
+      It is a side project that costs a little to keep running, so if you would like to throw something in the
+      hat there is <a href="${CREATOR_KOFI}" rel="noopener">a Ko-fi</a>. If you would rather contribute a fix
+      than a coffee, the code is open at
+      <a href="https://github.com/phdynamic/shitsky38" rel="noopener">github.com/phdynamic/shitsky38</a>.`,
     ],
     [
       'How many votes do I get?',
