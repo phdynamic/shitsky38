@@ -317,9 +317,7 @@ export const faqPage = () => {
       html`${creator().displayName} —
       <a href="https://bsky.app/profile/${creator().handle}" rel="noopener">@${creator().handle}</a> on Bluesky.
       It is a side project that costs a little to keep running, so if you would like to throw something in the
-      hat there is <a href="${CREATOR_KOFI}" rel="noopener">a Ko-fi</a>. If you would rather contribute a fix
-      than a coffee, the code is open at
-      <a href="https://github.com/phdynamic/shitsky38" rel="noopener">github.com/phdynamic/shitsky38</a>.`,
+      hat there is <a href="${CREATOR_KOFI}" rel="noopener">a Ko-fi</a>.`,
     ],
     [
       'How many votes do I get?',
