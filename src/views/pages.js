@@ -71,6 +71,25 @@ export const leaderboardPage = ({ entries, rest, actors, stats, viewer, ballot, 
           </p>`}
     </section>
 
+    <section class="find">
+      <h2>Vote for anybody on Bluesky</h2>
+      <p class="muted">
+        Not just the accounts below — any account at all. Search a handle or a name, and press a vote
+        again to take it back.
+      </p>
+      <form class="search" action="/vote" method="get" role="search">
+        <input
+          type="search"
+          name="q"
+          id="q"
+          placeholder="Search any Bluesky account — e.g. dril"
+          autocomplete="off"
+        />
+        <button class="btn" type="submit">Search</button>
+      </form>
+      <ul class="results" id="results"></ul>
+    </section>
+
     ${entries.length === 0
       ? html`<section class="empty">
           <h2>Nobody has been nominated yet.</h2>

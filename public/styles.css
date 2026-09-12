@@ -394,3 +394,16 @@ footer p { margin: 0.4rem 0; }
   color: var(--ink-dim);
 }
 .load-more:hover { border-color: var(--accent); color: var(--ink); filter: none; }
+
+.find {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem 1.2rem;
+  margin-bottom: 2rem;
+  background: var(--bg-soft);
+}
+.find h2 { margin: 0 0 0.2rem; font-size: 1.15rem; }
+.find p { margin: 0 0 0.9rem; font-size: 0.9rem; }
+.find .search { margin-bottom: 0; }
+.find .results:not(:empty) { margin-top: 0.9rem; margin-bottom: 0; }
+.find .results .row { background: var(--bg-card); }
