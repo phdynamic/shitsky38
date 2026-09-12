@@ -1,0 +1,32 @@
+{
+  "lexicon": 1,
+  "id": "com.shitsky38.vote",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A public vote for a Bluesky account in the Shitsky38. The record key MUST be the subject's DID, which makes a voter's ballot self-deduplicating: one record per subject, per voter.",
+      "key": "any",
+      "record": {
+        "type": "object",
+        "required": ["subject", "createdAt"],
+        "properties": {
+          "subject": {
+            "type": "string",
+            "format": "did",
+            "description": "DID of the account being voted for. Must equal the record key."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "note": {
+            "type": "string",
+            "maxGraphemes": 140,
+            "maxLength": 1400,
+            "description": "Optional public one-liner on why this account deserves it."
+          }
+        }
+      }
+    }
+  }
+}

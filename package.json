@@ -1,0 +1,22 @@
+{
+  "name": "shitsky38",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The 38 best shitposters on Bluesky, voted by you. Votes live in your own atproto repo.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "keygen": "node scripts/keygen.js",
+    "backfill": "node scripts/backfill.js"
+  },
+  "dependencies": {
+    "@atproto/api": "^0.20.44",
+    "@atproto/jwk-jose": "^0.2.4",
+    "@atproto/oauth-client-node": "^0.5.7",
+    "express": "^5.2.1"
+  }
+}

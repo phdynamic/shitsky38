@@ -1,0 +1,75 @@
+import process from 'node:process'
+import { existsSync } from 'node:fs'
+
+// Node 21.7+ can read .env without a dependency.
+if (existsSync('.env')) process.loadEnvFile('.env')
+
+const env = (key, fallback) => {
+  const value = process.env[key]
+  return value === undefined || value === '' ? fallback : value
+}
+
+const num = (key, fallback) => {
+  const value = Number(env(key, fallback))
+  if (!Number.isFinite(value)) throw new Error(`${key} must be a number`)
+  return value
+}
+
+const date = (key, fallback) => {
+  const value = new Date(env(key, fallback))
+  if (Number.isNaN(value.getTime())) throw new Error(`${key} must be an ISO datetime`)
+  return value
+}
+
+export const VOTE_NSID = 'com.shitsky38.vote'
+export const PROFILE_NSID = 'com.shitsky38.profile'
+export const SCOPE = 'atproto transition:generic'
+
+const publicUrl = new URL(env('PUBLIC_URL', 'http://127.0.0.1:3000'))
+
+// atproto has a development mode for clients served from loopback: the client_id is the
+// literal string `http://localhost` with the metadata passed as query parameters, and no
+// signing keyset is needed. Anything else is a real confidential client.
+const isLoopback = ['127.0.0.1', '[::1]', '::1', 'localhost'].includes(publicUrl.hostname)
+
+export const config = {
+  port: num('PORT', publicUrl.port || 3000),
+  publicUrl: publicUrl.origin,
+  isDev: isLoopback,
+  cookieSecret: env('COOKIE_SECRET', isLoopback ? 'dev-only-insecure-secret' : ''),
+  siteName: env('SITE_NAME', 'Shitsky38'),
+  listSize: num('LIST_SIZE', 38),
+  maxVotes: num('MAX_VOTES', 10),
+  votingOpensAt: date('VOTING_OPENS_AT', '2026-09-01T00:00:00.000Z'),
+  votingClosesAt: date('VOTING_CLOSES_AT', '2026-12-31T23:59:59.000Z'),
+  dbPath: env('DB_PATH', './data/shitsky38.sqlite'),
+  appviewUrl: env('APPVIEW_URL', 'https://public.api.bsky.app').replace(/\/$/, ''),
+  jetstreamUrl: env('JETSTREAM_URL', 'wss://jetstream2.us-east.bsky.network/subscribe'),
+  jetstreamEnabled: env('JETSTREAM_ENABLED', '1') !== '0',
+  privateKeys: ['PRIVATE_KEY_1', 'PRIVATE_KEY_2', 'PRIVATE_KEY_3']
+    .map((key) => env(key, ''))
+    .filter(Boolean)
+    // PEMs are easier to carry through env vars with escaped newlines.
+    .map((key) => key.replace(/\\n/g, '\n')),
+}
+
+export const redirectUri = `${config.publicUrl}/oauth/callback`
+
+export const votingState = (now = new Date()) => {
+  if (now < config.votingOpensAt) return 'before'
+  if (now > config.votingClosesAt) return 'closed'
+  return 'open'
+}
+
+export const assertConfig = () => {
+  if (!config.isDev) {
+    if (!config.cookieSecret) throw new Error('COOKIE_SECRET is required outside of local development')
+    if (config.privateKeys.length === 0) {
+      throw new Error('At least one PRIVATE_KEY_n is required outside of local development (run: npm run keygen)')
+    }
+    if (publicUrl.protocol !== 'https:') throw new Error('PUBLIC_URL must be https outside of local development')
+  }
+  if (config.votingClosesAt <= config.votingOpensAt) {
+    throw new Error('VOTING_CLOSES_AT must be after VOTING_OPENS_AT')
+  }
+}

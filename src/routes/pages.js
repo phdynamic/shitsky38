@@ -1,0 +1,122 @@
+import { Router } from 'express'
+import { readFileSync, readdirSync } from 'node:fs'
+import { config } from '../config.js'
+import * as store from '../db.js'
+import { getPosts, hydrate, resolveHandle } from '../bluesky.js'
+import { syncBallotFromRepo, syncProfileFromRepo } from '../ballot.js'
+import { layout } from '../views/layout.js'
+import { faqPage, leaderboardPage, mePage, notFoundPage, profilePage, votePage } from '../views/pages.js'
+
+export const pagesRouter = Router()
+
+const viewerOf = async (req) => {
+  if (!req.viewerDid) return null
+  const actor = (await hydrate([req.viewerDid])).get(req.viewerDid)
+  return { did: req.viewerDid, handle: actor?.handle ?? null, displayName: actor?.displayName ?? null }
+}
+
+const send = (res, page) => res.type('html').send(page.toString())
+
+pagesRouter.get('/', async (req, res) => {
+  const entries = store.leaderboard({ limit: config.listSize })
+  const bubble = store.leaderboard({ limit: 24, offset: config.listSize })
+  const viewer = await viewerOf(req)
+  const ballot = req.viewerDid ? store.getBallot(req.viewerDid) : []
+  const actors = await hydrate([...entries, ...bubble].map((entry) => entry.did))
+
+  send(
+    res,
+    layout({
+      viewer,
+      path: '/',
+      body: leaderboardPage({ entries, bubble, actors, stats: store.totals(), viewer, ballot }),
+    }),
+  )
+})
+
+pagesRouter.get('/vote', async (req, res) => {
+  const viewer = await viewerOf(req)
+  const ballot = req.viewerDid ? store.getBallot(req.viewerDid) : []
+  const actors = await hydrate(ballot.map((item) => item.subject_did))
+  send(
+    res,
+    layout({
+      title: 'Vote',
+      viewer,
+      path: '/vote',
+      body: votePage({ viewer, ballot, actors, query: req.query.q ? String(req.query.q) : '' }),
+    }),
+  )
+})
+
+pagesRouter.get('/me', async (req, res) => {
+  if (!req.viewerDid) return res.redirect(`/login?next=${encodeURIComponent('/me')}`)
+  const viewer = await viewerOf(req)
+  // Re-read the repo so a vote deleted in another client shows up here.
+  await syncBallotFromRepo(req.viewerDid).catch(() => {})
+  const ballot = store.getBallot(req.viewerDid)
+  const actors = await hydrate(ballot.map((item) => item.subject_did))
+  send(
+    res,
+    layout({
+      title: 'My ballot',
+      viewer,
+      path: '/me',
+      body: mePage({ viewer, ballot, actors, standingEntry: store.standing(req.viewerDid) }),
+    }),
+  )
+})
+
+pagesRouter.get('/profile/:actor', async (req, res) => {
+  const param = String(req.params.actor)
+  let did = param
+  if (!param.startsWith('did:')) {
+    try {
+      did = await resolveHandle(param)
+    } catch {
+      return res.status(404).type('html').send(layout({ title: 'Not found', viewer: await viewerOf(req), body: notFoundPage() }).toString())
+    }
+  }
+
+  const viewer = await viewerOf(req)
+  const isSelf = viewer?.did === did
+  if (isSelf) await syncProfileFromRepo(did).catch(() => {})
+
+  const actor = (await hydrate([did])).get(did) ?? { did }
+  const entry = store.standing(did)
+  const nominee = store.getNomineeProfile(did)
+  const voters = store.votersFor(did, 60)
+  const voterActors = await hydrate(voters.map((voter) => voter.voter_did))
+  const pinned = nominee?.pinnedPost ? (await getPosts([nominee.pinnedPost])).get(nominee.pinnedPost) : null
+  const ballot = req.viewerDid ? store.getBallot(req.viewerDid) : []
+
+  send(
+    res,
+    layout({
+      title: actor.displayName ?? actor.handle ?? 'Profile',
+      viewer,
+      path: '/profile',
+      body: profilePage({
+        actor,
+        entry,
+        viewer,
+        voted: ballot.some((item) => item.subject_did === did),
+        outOfVotes: ballot.length >= config.maxVotes,
+        voters,
+        voterActors,
+        pinned,
+        isSelf,
+        nominee,
+      }),
+    }),
+  )
+})
+
+pagesRouter.get('/faq', async (req, res) => {
+  send(res, layout({ title: 'Questions', viewer: await viewerOf(req), path: '/faq', body: faqPage() }))
+})
+
+pagesRouter.get('/lexicons', (_req, res) => {
+  const files = readdirSync('lexicons').filter((name) => name.endsWith('.json'))
+  res.json(files.map((name) => JSON.parse(readFileSync(`lexicons/${name}`, 'utf8'))))
+})
