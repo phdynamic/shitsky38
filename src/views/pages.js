@@ -65,7 +65,9 @@ export const leaderboardPage = ({ entries, bubble, actors, stats, viewer, ballot
             You have used <b>${ballot.length}</b> of <b>${config.maxVotes}</b> votes.
             <a href="/vote">Find someone to vote for →</a>
           </p>`
-        : html`<p class="you-have"><a class="btn" href="/login">Sign in with Bluesky</a> to cast your ${config.maxVotes} votes.</p>`}
+        : html`<p class="you-have">
+            <a class="btn" href="/login">Sign in with Bluesky</a> to cast your ${config.maxVotes} votes
+          </p>`}
     </section>
 
     ${entries.length === 0

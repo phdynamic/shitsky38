@@ -62,6 +62,12 @@ export const layout = ({ title, viewer, path = '/', body, head = '' }) => html`<
         <a href="/lexicons">Lexicons</a> ·
         <a href="https://bsky.app">Bluesky</a>
       </p>
+      <p class="credit">
+        Made by
+        <a href="https://bsky.app/profile/professorkiosk.wtf" rel="noopener">Professor Kiosk (@professorkiosk.wtf)</a>.
+        If you would like to support the effort,
+        <a class="kofi" href="https://ko-fi.com/professorkiosk" rel="noopener">buy me a coffee on Ko-fi ☕</a>.
+      </p>
     </footer>
     <script src="/app.js" type="module"></script>
   </body>
