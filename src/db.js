@@ -189,22 +189,37 @@ export const replaceBallot = (voterDid, votes) => {
 
 /* ---------------------------------------------------------- leaderboard ---- */
 
+// Standard competition ranking: equal totals share a rank, and the next lower total skips
+// ahead by however many were tied — 1, 2, 2, 4. Rows are still ordered within a tie by who
+// reached that total first, which is presentation only and never changes the number shown.
+const RANKED = `
+  ranked AS (
+    SELECT did, votes, first_vote, RANK() OVER (ORDER BY votes DESC) AS rank
+    FROM tally
+  )
+`
+
 const leaderboardStmt = stmt(`
-  ${ELIGIBLE}
-  SELECT did, votes, first_vote,
-         ROW_NUMBER() OVER (ORDER BY votes DESC, first_vote ASC) AS rank
-  FROM tally
+  ${ELIGIBLE},
+  ${RANKED}
+  SELECT * FROM ranked
   ORDER BY votes DESC, first_vote ASC
   LIMIT :limit OFFSET :offset
 `)
 
+// The list is everyone ranked inside the cut. A tie at the boundary makes it longer than
+// LIST_SIZE rather than dropping somebody who polled exactly as well as the account above them.
+const topListStmt = stmt(`
+  ${ELIGIBLE},
+  ${RANKED}
+  SELECT * FROM ranked
+  WHERE rank <= :list_size
+  ORDER BY votes DESC, first_vote ASC
+`)
+
 const standingStmt = stmt(`
   ${ELIGIBLE},
-  ranked AS (
-    SELECT did, votes, first_vote,
-           ROW_NUMBER() OVER (ORDER BY votes DESC, first_vote ASC) AS rank
-    FROM tally
-  )
+  ${RANKED}
   SELECT * FROM ranked WHERE did = :did
 `)
 
@@ -225,6 +240,9 @@ const votersForStmt = stmt(`
 
 export const leaderboard = ({ limit = config.listSize, offset = 0 } = {}) =>
   leaderboardStmt().all({ ...bounds(), limit, offset })
+
+/** Everyone ranked within the cut — longer than LIST_SIZE when the boundary is tied. */
+export const topList = () => topListStmt().all({ ...bounds(), list_size: config.listSize })
 
 export const standing = (did) => standingStmt().get({ ...bounds(), did }) ?? null
 

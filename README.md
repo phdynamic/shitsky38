@@ -31,7 +31,10 @@ Counting rules, enforced in SQL so they hold even for records written outside th
 * only the **first 10** vote records on a ballot count, ordered by each record's `createdAt`;
 * votes created after `VOTING_CLOSES_AT` are ignored;
 * accounts that opted out are dropped from the tally;
-* ties break toward whoever got their first vote earliest.
+* equal totals share a rank, and the next total skips ahead by however many were tied
+  (1, 2, 2, 4). A tie on the cut puts everyone in it on the list, so the list can run longer
+  than `LIST_SIZE`; within a tie, rows are ordered by who reached that total first, which is
+  presentation only and changes nobody's number.
 
 ## Running it
 

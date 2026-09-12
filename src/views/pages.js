@@ -44,7 +44,7 @@ const row = ({ entry, actor, viewer, voted, outOfVotes }) => html`<li class="row
 
 /* ----------------------------------------------------------- leaderboard ---- */
 
-export const leaderboardPage = ({ entries, rest, actors, stats, viewer, ballot, hasMore, pageSize }) => {
+export const leaderboardPage = ({ entries, rest, actors, stats, viewer, ballot, hasMore, nextOffset, pageSize }) => {
   const voted = new Set(ballot.map((b) => b.subject_did))
   const outOfVotes = ballot.length >= config.maxVotes
 
@@ -106,7 +106,7 @@ export const leaderboardPage = ({ entries, rest, actors, stats, viewer, ballot, 
             ? html`<button
                 class="btn btn-ghost load-more"
                 id="load-more"
-                data-offset="${config.listSize + rest.length}"
+                data-offset="${nextOffset}"
                 data-limit="${pageSize}"
               >
                 Load ${pageSize} more
@@ -348,10 +348,16 @@ export const faqPage = () => {
       you can rejoin while voting is open.`,
     ],
     [
-      'How are ties broken?',
-      html`By whoever got their first vote earliest. Only the first ${config.maxVotes} votes on any ballot count,
-      ordered by when each vote record was created, so writing 400 vote records straight into your repo does not
-      help you.`,
+      'What happens when two accounts tie?',
+      html`They share the rank. Three accounts on the same number of votes are all #12, and the next account
+      down is #15. If the tie lands on the cut, everybody in it makes the list — so a tie year can run to 39 or
+      40 names rather than dropping somebody who polled exactly as well as the account above them. Within a
+      tie we list whoever reached that total first, which is ordering only and changes nobody's number.`,
+    ],
+    [
+      'Can I stuff the ballot?',
+      html`Only the first ${config.maxVotes} votes on any ballot count, ordered by when each vote record was
+      created, so writing 400 vote records straight into your repo does not help you.`,
     ],
     [
       'When does it close?',

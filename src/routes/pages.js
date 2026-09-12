@@ -21,8 +21,8 @@ const viewerOf = async (req) => {
 const send = (res, page) => res.type('html').send(page.toString())
 
 pagesRouter.get('/', async (req, res) => {
-  const entries = store.leaderboard({ limit: config.listSize })
-  const rest = store.leaderboard({ limit: PAGE_SIZE, offset: config.listSize })
+  const entries = store.topList()
+  const rest = store.leaderboard({ limit: PAGE_SIZE, offset: entries.length })
   const viewer = await viewerOf(req)
   const ballot = req.viewerDid ? store.getBallot(req.viewerDid) : []
   const actors = await hydrate([...entries, ...rest].map((entry) => entry.did))
@@ -40,7 +40,8 @@ pagesRouter.get('/', async (req, res) => {
         stats,
         viewer,
         ballot,
-        hasMore: stats.nominees > config.listSize + rest.length,
+        hasMore: stats.nominees > entries.length + rest.length,
+        nextOffset: entries.length + rest.length,
         pageSize: PAGE_SIZE,
       }),
     }),
