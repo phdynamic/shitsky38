@@ -1,7 +1,7 @@
 import { NodeOAuthClient } from '@atproto/oauth-client-node'
-import { JoseKey } from '@atproto/jwk-jose'
 import { config, redirectUri, SCOPE } from './config.js'
 import { sessionStore, stateStore } from './db.js'
+import { loadKeyset } from './secrets.js'
 
 const devClientId = () => {
   // atproto's development client: the literal `http://localhost` origin, with the metadata
@@ -40,9 +40,7 @@ const clientMetadata = config.isDev
       jwks_uri: `${config.publicUrl}/jwks.json`,
     }
 
-const keyset = config.isDev
-  ? undefined
-  : await Promise.all(config.privateKeys.map((pem, i) => JoseKey.fromImportable(pem, `key${i + 1}`)))
+const keyset = await loadKeyset()
 
 // Serialises token refreshes per subject. Enough for a single instance; swap for a shared
 // lock (Redis, Postgres advisory locks) the day this runs on more than one process.

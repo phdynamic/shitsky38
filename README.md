@@ -50,16 +50,39 @@ requires the redirect to be a loopback *IP*, and the cookie follows the same ori
 In dev there are no keys to manage: the client id is atproto's special `http://localhost` form with
 the metadata passed as query parameters.
 
-## Deploying to shitsky38.com
+## Deploying
 
-1. Point `shitsky38.com` at the app and terminate TLS in front of it.
-2. `npm run keygen` and paste the three `PRIVATE_KEY_n` lines into `.env`.
-3. Set `PUBLIC_URL=https://shitsky38.com` and a long random `COOKIE_SECRET`.
-4. Start it. The OAuth client metadata is served from `/client-metadata.json` and the public keys
-   from `/jwks.json` — both must be reachable from the public internet, since every PDS fetches
-   them during sign-in.
+The app needs one long-running process, a writable disk, and a stable public https origin. It does
+**not** run on static hosting (GitHub Pages) or on plain serverless: the OAuth client signs a
+`private_key_jwt` server-side, the Jetstream consumer holds a WebSocket open, and SQLite is a file.
 
-A non-loopback `PUBLIC_URL` refuses to boot without keys, a cookie secret, and https.
+Run **one** instance. The token-refresh lock is in-process and the database is local to the disk.
+
+### Railway
+
+1. Push this repo to GitHub, then in Railway: **New Project → Deploy from GitHub repo**.
+   `railway.json` sets the builder, the start command, and the `/healthz` check; `.nvmrc` pins Node 24.
+2. Add a **Volume** to the service, mounted at `/data`.
+3. Set variables:
+
+   | Variable | Value |
+   | --- | --- |
+   | `DB_PATH` | `/data/shitsky38.sqlite` |
+   | `PUBLIC_URL` | `https://shitsky38.com` (or the `*.up.railway.app` domain, while testing) |
+   | `VOTING_CLOSES_AT` | when it ends, ISO 8601 |
+
+   Leave `PORT` alone — Railway injects it. `COOKIE_SECRET` and `PRIVATE_KEY_n` can stay empty:
+   on first boot the app mints them and stores them on the volume. Set them explicitly (via
+   `npm run keygen`) if you would rather the deploy be stateless in that respect.
+4. Add `shitsky38.com` under **Settings → Networking → Custom Domain** and point DNS at the
+   CNAME Railway gives you.
+
+`PUBLIC_URL` is not cosmetic — it *is* the OAuth `client_id`, because the client id is the URL the
+metadata is served from. Changing it changes the client's identity, so every existing session has to
+sign in again. Pick the final domain before telling people about it.
+
+Once it is up, check `https://your-domain/client-metadata.json` and `/jwks.json` load from the public
+internet. Every PDS fetches both during sign-in, so if they 404, nobody can log in.
 
 ### Endpoints
 
@@ -85,9 +108,10 @@ src/
   ballot.js     casting, taking back, opting out — all of it writes to the repo first
   bluesky.js    AppView reads, profile cache, PDS resolution, listRecords
   jetstream.js  firehose consumer for com.shitsky38.*
+  secrets.js    cookie secret + OAuth keyset: env first, else minted and stored
   routes/       auth.js · api.js · pages.js
   views/        html.js (escaping template tag) · layout.js · pages.js
-public/         styles.css · app.js · favicon.svg
+public/         styles.css · app.js · favicon.svg · logo.png
 scripts/        keygen.js · backfill.js
 ```
 

@@ -19,6 +19,11 @@ app.use(express.urlencoded({ extended: false, limit: '16kb' }))
 app.use(express.static('public', { maxAge: config.isDev ? 0 : '1h' }))
 app.use(viewerMiddleware)
 
+// Cheap liveness probe for the platform's health check.
+app.get('/healthz', (_req, res) => {
+  res.json({ ok: true, voting: votingState(), uptime: Math.round(process.uptime()) })
+})
+
 app.use('/api', apiRouter)
 app.use(authRouter)
 app.use(pagesRouter)

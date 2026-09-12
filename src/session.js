@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import { config } from './config.js'
+import { cookieSecret } from './secrets.js'
 
 const COOKIE_NAME = 's38'
 const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
@@ -8,14 +9,14 @@ const b64url = (buf) => Buffer.from(buf).toString('base64url')
 
 const sign = (payload) => {
   const body = b64url(JSON.stringify(payload))
-  const mac = crypto.createHmac('sha256', config.cookieSecret).update(body).digest('base64url')
+  const mac = crypto.createHmac('sha256', cookieSecret).update(body).digest('base64url')
   return `${body}.${mac}`
 }
 
 const verify = (value) => {
   if (typeof value !== 'string' || !value.includes('.')) return null
   const [body, mac] = value.split('.')
-  const expected = crypto.createHmac('sha256', config.cookieSecret).update(body).digest('base64url')
+  const expected = crypto.createHmac('sha256', cookieSecret).update(body).digest('base64url')
   const a = Buffer.from(mac ?? '')
   const b = Buffer.from(expected)
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null

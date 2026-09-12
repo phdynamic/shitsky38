@@ -62,13 +62,11 @@ export const votingState = (now = new Date()) => {
 }
 
 export const assertConfig = () => {
-  if (!config.isDev) {
-    if (!config.cookieSecret) throw new Error('COOKIE_SECRET is required outside of local development')
-    if (config.privateKeys.length === 0) {
-      throw new Error('At least one PRIVATE_KEY_n is required outside of local development (run: npm run keygen)')
-    }
-    if (publicUrl.protocol !== 'https:') throw new Error('PUBLIC_URL must be https outside of local development')
+  if (!config.isDev && publicUrl.protocol !== 'https:') {
+    throw new Error('PUBLIC_URL must be https outside of local development')
   }
+  // COOKIE_SECRET and PRIVATE_KEY_n are optional: see src/secrets.js, which mints and stores
+  // them alongside the data when they are not supplied.
   if (config.votingClosesAt <= config.votingOpensAt) {
     throw new Error('VOTING_CLOSES_AT must be after VOTING_OPENS_AT')
   }
