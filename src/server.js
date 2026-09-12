@@ -9,6 +9,7 @@ import { pagesRouter } from './routes/pages.js'
 import { layout } from './views/layout.js'
 import { errorPage, notFoundPage } from './views/pages.js'
 import { startJetstream } from './jetstream.js'
+import { oauthClient } from './oauth.js'
 
 const app = express()
 app.disable('x-powered-by')
@@ -41,7 +42,8 @@ app.use((err, _req, res, _next) => {
 })
 
 const server = app.listen(config.port, () => {
-  console.log(`${config.siteName} listening on ${config.publicUrl} (voting ${votingState()})`)
+  console.log(`${config.siteName} on port ${config.port} — public origin ${config.publicUrl} (voting ${votingState()})`)
+  console.log(`client_id: ${oauthClient.clientMetadata.client_id}`)
   if (config.isDev) console.log('dev mode: using the atproto localhost OAuth client — no keys needed')
 })
 

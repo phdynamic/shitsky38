@@ -19,8 +19,14 @@ if (major === 22 || (major === 23 && minor < 4)) {
   }
 }
 
-// Fail fast on bad configuration, before anything opens a socket.
+// Fail fast on bad configuration, before anything opens a socket. A deploy log deserves a
+// sentence it can act on, not a stack trace.
 const { assertConfig } = await import('./config.js')
-assertConfig()
+try {
+  assertConfig()
+} catch (err) {
+  console.error(`Configuration error: ${err.message}`)
+  process.exit(1)
+}
 
 await import('./server.js')
