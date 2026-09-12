@@ -1,6 +1,7 @@
 import { html, raw } from './html.js'
 import { config, votingState } from '../config.js'
 import { asset } from '../assets.js'
+import { CREATOR_KOFI, creator } from '../creator.js'
 
 const navItems = [
   ['/', 'Leaderboard'],
@@ -66,6 +67,19 @@ export const layout = ({ title, viewer, path = '/', body, head = '' }) => html`<
         <a href="/faq">How it works</a> ·
         <a href="https://bsky.app">Bluesky</a>
       </p>
+      <div class="credit">
+        <a class="credit-who" href="https://bsky.app/profile/${creator().handle}" rel="noopener">
+          ${creator().avatar
+            ? html`<img class="avatar sm" src="${creator().avatar}" alt="" loading="lazy" />`
+            : html`<span class="avatar sm placeholder" aria-hidden="true">P</span>`}
+          <span>Made by <b>${creator().displayName}</b> <span class="handle">@${creator().handle}</span></span>
+        </a>
+        <span class="credit-sep" aria-hidden="true">·</span>
+        <span class="credit-support">
+          If you would like to support the effort,
+          <a class="kofi" href="${CREATOR_KOFI}" rel="noopener">buy me a coffee on Ko-fi ☕</a>
+        </span>
+      </div>
     </footer>
     <script src="${asset('/app.js')}" type="module"></script>
   </body>
