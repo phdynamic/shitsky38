@@ -75,6 +75,7 @@ export const layout = ({ title, viewer, path = '/', body, head = '' }) => html`<
             : html`<span class="avatar sm placeholder" aria-hidden="true">P</span>`}
           <span>Made by <b>${creator().displayName}</b> <span class="handle">@${creator().handle}</span></span>
         </a>
+        <span class="credit-sep" aria-hidden="true">·</span>
         <span class="credit-support">
           If you would like to support the effort,
           <a class="kofi" href="${CREATOR_KOFI}" rel="noopener">buy me a coffee on Ko-fi ☕</a>
