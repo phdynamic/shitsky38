@@ -216,17 +216,26 @@ if (searchInput && resultsList) {
   let timer
   let seq = 0
 
+  const message = (text) => {
+    const li = document.createElement('li')
+    li.className = 'muted pad'
+    li.textContent = text
+    resultsList.replaceChildren(li)
+  }
+
   const run = async () => {
     const q = searchInput.value.trim()
     if (q.length < 2) return resultsList.replaceChildren()
     const mine = ++seq
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`)
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
       if (mine !== seq) return
+      // An empty list and a failed search look identical unless we say so.
+      if (!res.ok) return message(data.message || 'Search is not working right now. Try again in a moment.')
       renderResults(data)
     } catch {
-      /* a dropped search is not worth a toast */
+      if (mine === seq) message('Could not reach the server. Check your connection and try again.')
     }
   }
 

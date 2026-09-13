@@ -7,8 +7,19 @@ import { requireViewer } from '../session.js'
 
 export const apiRouter = Router()
 
+const upstream = (err) =>
+  err.name === 'TimeoutError' || err.name === 'AbortError' || err.status >= 500
+
 const fail = (res, err) => {
   if (err instanceof AppError) return res.status(err.status).json({ error: err.code, message: err.message })
+  if (upstream(err)) {
+    // Bluesky's API not answering is a different thing from this app being broken, and the
+    // person searching should be told which it is.
+    console.warn('[api] upstream unavailable:', err.message)
+    return res
+      .status(503)
+      .json({ error: 'upstream', message: 'Bluesky is not answering right now. Try again in a moment.' })
+  }
   console.error('[api]', err)
   return res.status(500).json({ error: 'internal', message: 'Something went wrong on our end.' })
 }

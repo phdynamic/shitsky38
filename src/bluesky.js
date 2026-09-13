@@ -4,18 +4,39 @@ import { getActors, upsertActor } from './db.js'
 const PROFILE_TTL_MS = 6 * 60 * 60 * 1000
 const USER_AGENT = `${config.siteName} (+${config.publicUrl})`
 
-const json = async (url, { timeout = 10_000 } = {}) => {
-  const res = await fetch(url, {
-    headers: { accept: 'application/json', 'user-agent': USER_AGENT },
-    signal: AbortSignal.timeout(timeout),
-  })
-  if (!res.ok) {
-    const body = await res.text().catch(() => '')
-    const err = new Error(`${res.status} ${res.statusText} for ${url}: ${body.slice(0, 200)}`)
-    err.status = res.status
-    throw err
+// undici reports every network-level failure as `TypeError: fetch failed`, with the real cause
+// nested — sometimes as an AggregateError — so the name is the reliable signal, not cause.code.
+const retryable = (err) =>
+  err.name === 'TimeoutError' || err.name === 'AbortError' || err.name === 'TypeError' || err.status >= 500
+
+/**
+ * The path out to the AppView stalls in bursts — requests that normally answer in 200ms hang
+ * until they time out, while the same endpoint is healthy from elsewhere. A short timeout with
+ * one retry turns most of those stalls into a slightly slow answer instead of a failure, and
+ * costs no more in the worst case than the single long attempt it replaces.
+ */
+const json = async (url, { timeout = 5_000, attempts = 2 } = {}) => {
+  let last
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: { accept: 'application/json', 'user-agent': USER_AGENT },
+        signal: AbortSignal.timeout(timeout),
+      })
+      if (!res.ok) {
+        const body = await res.text().catch(() => '')
+        const err = new Error(`${res.status} ${res.statusText} for ${url}: ${body.slice(0, 200)}`)
+        err.status = res.status
+        throw err
+      }
+      return await res.json()
+    } catch (err) {
+      last = err
+      if (attempt === attempts || !retryable(err)) throw err
+      console.warn(`[bluesky] ${err.name === 'TimeoutError' ? 'timed out' : err.message} — retrying ${url}`)
+    }
   }
-  return res.json()
+  throw last
 }
 
 const xrpc = (base, nsid, params = {}) => {
@@ -42,11 +63,25 @@ const normalize = (profile) => ({
   description: profile.description ?? null,
 })
 
+const SEARCH_TTL_MS = 60_000
+const searchCache = new Map()
+
 export const searchActors = async (q, limit = 12) => {
-  if (!q?.trim()) return []
-  const data = await xrpc(config.appviewUrl, 'app.bsky.actor.searchActors', { q: q.trim(), limit })
+  const query = q?.trim()
+  if (!query) return []
+
+  const key = `${query.toLowerCase()}:${limit}`
+  const hit = searchCache.get(key)
+  if (hit && Date.now() - hit.at < SEARCH_TTL_MS) return hit.actors
+
+  const data = await xrpc(config.appviewUrl, 'app.bsky.actor.searchActors', { q: query, limit })
   const actors = (data.actors ?? []).map(normalize)
   for (const actor of actors) upsertActor(actor)
+
+  searchCache.set(key, { at: Date.now(), actors })
+  if (searchCache.size > 500) {
+    for (const [k, v] of searchCache) if (Date.now() - v.at > SEARCH_TTL_MS) searchCache.delete(k)
+  }
   return actors
 }
 
