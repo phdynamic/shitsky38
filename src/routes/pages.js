@@ -59,7 +59,13 @@ pagesRouter.get('/vote', async (req, res) => {
       title: 'Vote',
       viewer,
       path: '/vote',
-      body: votePage({ viewer, ballot, actors, query: req.query.q ? String(req.query.q) : '' }),
+      body: votePage({
+        viewer,
+        ballot,
+        actors,
+        withdrawn: store.optedOutAmong(ballot.map((item) => item.subject_did)),
+        query: req.query.q ? String(req.query.q) : '',
+      }),
     }),
   )
 })
@@ -77,7 +83,13 @@ pagesRouter.get('/me', async (req, res) => {
       title: 'My ballot',
       viewer,
       path: '/me',
-      body: mePage({ viewer, ballot, actors, standingEntry: store.standing(req.viewerDid) }),
+      body: mePage({
+        viewer,
+        ballot,
+        actors,
+        withdrawn: store.optedOutAmong(ballot.map((item) => item.subject_did)),
+        standingEntry: store.standing(req.viewerDid),
+      }),
     }),
   )
 })

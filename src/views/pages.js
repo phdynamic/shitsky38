@@ -127,7 +127,7 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, hasMor
 
 /* ------------------------------------------------------------------ vote ---- */
 
-export const votePage = ({ viewer, ballot, actors, query }) => html`
+export const votePage = ({ viewer, ballot, actors, withdrawn, query }) => html`
   <section class="hero narrow">
     <h1>Cast your votes</h1>
     <p class="lede">
@@ -174,6 +174,7 @@ export const votePage = ({ viewer, ballot, actors, query }) => html`
                   <span class="handle">${handleOf(actor)}</span>
                 </span>
               </a>
+              ${withdrawn.has(item.subject_did) ? html`<span class="withdrew">withdrew</span>` : ''}
               ${voteButton({ did: item.subject_did, voted: true, viewer })}
             </li>`
           })}
@@ -244,7 +245,9 @@ const selfControls = ({ nominee }) => html`<section class="self-controls">
 
 /* ------------------------------------------------------------------- me ---- */
 
-export const mePage = ({ viewer, ballot, actors, standingEntry }) => html`
+export const mePage = ({ viewer, ballot, actors, withdrawn, standingEntry }) => {
+  const dead = ballot.filter((item) => withdrawn.has(item.subject_did))
+  return html`
   <section class="hero narrow">
     <h1>Your ballot</h1>
     <p class="lede">
@@ -262,6 +265,16 @@ export const mePage = ({ viewer, ballot, actors, standingEntry }) => html`
     ? html`<p class="you-have">You are currently <b>#${standingEntry.rank}</b> with ${plural(standingEntry.votes, 'vote', 'votes')}. <a href="/profile/${viewer.did}">Your entry →</a></p>`
     : html`<p class="you-have muted">You have no votes yet. <a href="/profile/${viewer.did}">Your entry →</a></p>`}
 
+  ${dead.length > 0
+    ? html`<p class="notice">
+        ${dead.length === 1 ? 'One of your votes is for an account that has' : `${dead.length} of your votes are for accounts that have`}
+        withdrawn from the list. ${dead.length === 1 ? 'It counts' : 'They count'} for nobody now, but
+        ${dead.length === 1 ? 'it is' : 'they are'} still using up your ${config.maxVotes}. Press
+        <b>Voted</b> below to take ${dead.length === 1 ? 'it' : 'them'} back and spend
+        ${dead.length === 1 ? 'it' : 'them'} elsewhere.
+      </p>`
+    : ''}
+
   ${ballot.length === 0
     ? html`<section class="empty"><h2>Empty ballot.</h2><p><a href="/vote">Go vote for somebody.</a></p></section>`
     : html`<ul class="results">
@@ -275,12 +288,15 @@ export const mePage = ({ viewer, ballot, actors, standingEntry }) => html`
                 <span class="handle">${handleOf(actor)}</span>
               </span>
             </a>
-            <span class="muted small">${new Date(item.created_at).toLocaleDateString()}</span>
+            ${withdrawn.has(item.subject_did)
+              ? html`<span class="withdrew">withdrew</span>`
+              : html`<span class="muted small">${new Date(item.created_at).toLocaleDateString()}</span>`}
             ${voteButton({ did: item.subject_did, voted: true, viewer })}
           </li>`
         })}
       </ul>`}
 `
+}
 
 /* ---------------------------------------------------------------- login ---- */
 

@@ -307,6 +307,16 @@ export const getNomineeProfile = (did) => {
 
 export const deleteNomineeProfile = (did) => delProfileStmt().run(did).changes
 
+/** Of these accounts, which have withdrawn. Used to flag dead votes on a ballot. */
+export const optedOutAmong = (dids) => {
+  if (dids.length === 0) return new Set()
+  const holes = dids.map(() => '?').join(', ')
+  const rows = db
+    .prepare(`SELECT did FROM nominee_profile WHERE opted_out = 1 AND did IN (${holes})`)
+    .all(...dids)
+  return new Set(rows.map((row) => row.did))
+}
+
 /* ------------------------------------------------------------------- kv ---- */
 
 const setKvStmt = stmt('INSERT OR REPLACE INTO kv (k, v) VALUES (?, ?)')

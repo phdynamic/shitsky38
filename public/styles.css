@@ -397,3 +397,25 @@ footer p { margin: 0.4rem 0; }
 .find .search { margin-bottom: 0; }
 .find .results:not(:empty) { margin-top: 0.9rem; margin-bottom: 0; }
 .find .results .row { background: var(--bg-card); }
+
+.notice {
+  border: 1px solid color-mix(in srgb, var(--gold) 40%, var(--line));
+  background: color-mix(in srgb, var(--gold) 8%, transparent);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: var(--ink-dim);
+  margin: 0 0 1.25rem;
+}
+.notice b { color: var(--ink); }
+.withdrew {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--hot);
+  border: 1px solid color-mix(in srgb, var(--hot) 45%, transparent);
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
+}
