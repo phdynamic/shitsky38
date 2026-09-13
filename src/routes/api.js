@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { config, votingState } from '../config.js'
 import * as store from '../db.js'
-import { hydrate, resolveHandle, searchActors } from '../bluesky.js'
+import { handleCandidates, hydrate, resolveHandle, searchActors } from '../bluesky.js'
 import { AppError, setOptOut, setPinnedPost, toggleVote } from '../ballot.js'
 import { requireViewer } from '../session.js'
 
@@ -28,17 +28,19 @@ apiRouter.get('/search', async (req, res) => {
   const q = String(req.query.q ?? '').trim()
   try {
     let actors = await searchActors(q, 15)
-    // A handle typed in full should come first even if search ranking disagrees.
-    if (q.includes('.') || q.startsWith('did:')) {
-      try {
-        const did = await resolveHandle(q)
-        if (did && !actors.some((a) => a.did === did)) {
-          const exact = (await hydrate([did])).get(did)
-          if (exact) actors = [exact, ...actors]
-        }
-      } catch {
-        /* not a handle, no problem */
-      }
+
+    // An exact account comes first, whether it was typed as a full handle, a DID, or the bare
+    // name in front of .bsky.social — search ranking misses that last one often enough to matter.
+    const resolved = await Promise.allSettled(handleCandidates(q).map((candidate) => resolveHandle(candidate)))
+    const exactDids = resolved
+      .filter((outcome) => outcome.status === 'fulfilled' && outcome.value)
+      .map((outcome) => outcome.value)
+      .filter((did) => !actors.some((actor) => actor.did === did))
+
+    if (exactDids.length > 0) {
+      const profiles = await hydrate(exactDids)
+      const exact = exactDids.map((did) => profiles.get(did)).filter((actor) => actor?.handle)
+      actors = [...exact, ...actors]
     }
     const ballot = req.viewerDid ? store.getBallot(req.viewerDid).map((b) => b.subject_did) : []
     res.json({

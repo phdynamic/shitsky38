@@ -85,11 +85,47 @@ export const searchActors = async (q, limit = 12) => {
   return actors
 }
 
+const HANDLE_TTL_MS = 5 * 60 * 1000
+const handleCache = new Map()
+
 export const resolveHandle = async (handle) => {
   const clean = handle.trim().replace(/^@/, '')
   if (clean.startsWith('did:')) return clean
-  const data = await xrpc(config.appviewUrl, 'com.atproto.identity.resolveHandle', { handle: clean })
-  return data.did
+
+  // Typing a handle fires one of these per keystroke, and a miss is worth remembering as much
+  // as a hit — most of what gets typed is a prefix of something that does not exist yet.
+  const hit = handleCache.get(clean)
+  if (hit && Date.now() - hit.at < HANDLE_TTL_MS) {
+    if (hit.did) return hit.did
+    throw Object.assign(new Error(`No account for ${clean}`), { status: 400, cached: true })
+  }
+
+  try {
+    const data = await xrpc(config.appviewUrl, 'com.atproto.identity.resolveHandle', { handle: clean })
+    handleCache.set(clean, { at: Date.now(), did: data.did })
+    return data.did
+  } catch (err) {
+    if (err.status >= 400 && err.status < 500) handleCache.set(clean, { at: Date.now(), did: null })
+    throw err
+  }
+}
+
+/**
+ * What someone might mean by what they typed. Bluesky's actor search does not reliably return
+ * the exact account for a bare name — "jcsalterego" does not surface jcsalterego.bsky.social —
+ * so a bare name is also tried as a handle on the default domain.
+ */
+export const handleCandidates = (query) => {
+  const clean = query.trim().replace(/^@/, '')
+  if (!clean) return []
+  if (clean.startsWith('did:')) return [clean]
+  const candidates = []
+  if (clean.includes('.')) candidates.push(clean)
+  // One DNS label: up to 63 characters, no leading or trailing hyphen. Bluesky's own signups are
+  // shorter than that, but older accounts predate the current rules and a candidate that does not
+  // resolve costs one lookup, cached.
+  if (/^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/.test(clean)) candidates.push(`${clean}.bsky.social`)
+  return candidates
 }
 
 /** Profiles for a set of DIDs, served from cache and refreshed in the background of the request. */
