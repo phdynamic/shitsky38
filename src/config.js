@@ -23,7 +23,18 @@ const date = (key, fallback) => {
 
 export const VOTE_NSID = 'com.shitsky38.vote'
 export const PROFILE_NSID = 'com.shitsky38.profile'
-export const SCOPE = 'atproto transition:generic'
+
+// Ask for permission to write our own two record types and nothing else. `transition:generic`,
+// the old default, is the App Password level: every record type, blob uploads, preferences.
+// Actions default to create/update/delete; the profile record is never deleted, so it says so.
+// Override with SCOPE if a server turns out not to understand fine-grained permissions yet.
+const DEFAULT_SCOPE = [
+  'atproto',
+  `repo:${VOTE_NSID}`,
+  `repo:${PROFILE_NSID}?action=create&action=update`,
+].join(' ')
+
+export const SCOPE = (process.env.SCOPE || DEFAULT_SCOPE).trim()
 
 // A deploy platform hands you a bare hostname, so that is what people paste. Accept it, and
 // say plainly what went wrong when the value is not a URL at all.

@@ -94,18 +94,19 @@ export const syncBallotFromRepo = async (did) => {
 
 /* --------------------------------------------------------------- profile ---- */
 
-const readProfileRecord = async (agent, did) => {
+// Read through the public repo rather than the authenticated agent: repo records are public
+// anyway, and this keeps the requested permissions to writing.
+const readProfileRecord = async (did) => {
   try {
-    const res = await agent.com.atproto.repo.getRecord({ repo: did, collection: PROFILE_NSID, rkey: 'self' })
-    return res.data.value ?? {}
+    const records = await listRecords(did, PROFILE_NSID)
+    return records.find((rec) => rkeyOf(rec.uri) === 'self')?.value ?? {}
   } catch {
     return {}
   }
 }
 
 const writeProfileRecord = async (did, patch) => {
-  const agent = await agentFor(did)
-  const current = await readProfileRecord(agent, did)
+  const [agent, current] = await Promise.all([agentFor(did), readProfileRecord(did)])
   const record = {
     $type: PROFILE_NSID,
     createdAt: current.createdAt ?? new Date().toISOString(),

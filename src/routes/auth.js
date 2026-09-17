@@ -55,7 +55,9 @@ authRouter.post('/login', async (req, res) => {
     console.warn('[auth] authorize failed:', err.message)
     const message = /resolve|handle/i.test(err.message)
       ? `We could not find an account for "${handle}".`
-      : 'Could not start the sign-in. Try again in a moment.'
+      : /scope|permission/i.test(err.message)
+        ? 'Your server did not accept the permissions this site asks for. Please let us know which server you are on.'
+        : 'Could not start the sign-in. Try again in a moment.'
     res.redirect(`/login?error=${encodeURIComponent(message)}`)
   }
 })
