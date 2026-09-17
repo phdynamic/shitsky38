@@ -88,7 +88,12 @@ const ELIGIBLE = `
     WHERE ranked.n <= :max_votes AND COALESCE(p.opted_out, 0) = 0
   ),
   tally AS (
-    SELECT subject_did AS did, COUNT(*) AS votes, MIN(created_at) AS first_vote
+    -- reached_at is when this account's most recent counted vote arrived: the moment it reached
+    -- the total it now has. That, not the date of its first vote ever, is what orders a tie.
+    SELECT subject_did AS did,
+           COUNT(*) AS votes,
+           MIN(created_at) AS first_vote,
+           MAX(created_at) AS reached_at
     FROM eligible
     GROUP BY subject_did
   )
@@ -194,7 +199,7 @@ export const replaceBallot = (voterDid, votes) => {
 // reached that total first, which is presentation only and never changes the number shown.
 const RANKED = `
   ranked AS (
-    SELECT did, votes, first_vote, RANK() OVER (ORDER BY votes DESC) AS rank
+    SELECT did, votes, first_vote, reached_at, RANK() OVER (ORDER BY votes DESC) AS rank
     FROM tally
   )
 `
@@ -203,7 +208,7 @@ const leaderboardStmt = stmt(`
   ${ELIGIBLE},
   ${RANKED}
   SELECT * FROM ranked
-  ORDER BY votes DESC, first_vote ASC
+  ORDER BY votes DESC, reached_at ASC, did ASC
   LIMIT :limit OFFSET :offset
 `)
 
@@ -214,7 +219,7 @@ const topListStmt = stmt(`
   ${RANKED}
   SELECT * FROM ranked
   WHERE rank <= :list_size
-  ORDER BY votes DESC, first_vote ASC
+  ORDER BY votes DESC, reached_at ASC, did ASC
 `)
 
 const standingStmt = stmt(`
