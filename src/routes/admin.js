@@ -8,9 +8,11 @@ import { viewerOf } from './pages.js'
 
 export const adminRouter = Router()
 
+// Scoped to /admin deliberately: an unpathed router-level guard runs for every request that
+// reaches this router, which would 404 the whole site for everyone who is not an admin.
 // Not 403: anybody who is not an admin gets the same 404 as a page that does not exist, so the
 // audit view is not advertised to people who cannot use it.
-adminRouter.use(async (req, res, next) => {
+adminRouter.use('/admin', async (req, res, next) => {
   if (!isAdmin(req.viewerDid)) {
     res
       .status(404)
