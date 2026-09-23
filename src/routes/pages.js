@@ -12,7 +12,7 @@ export const pagesRouter = Router()
 // How many past the cut to render up front, and to add on each press of Load more.
 const PAGE_SIZE = 24
 
-const viewerOf = async (req) => {
+export const viewerOf = async (req) => {
   if (!req.viewerDid) return null
   const actor = (await hydrate([req.viewerDid])).get(req.viewerDid)
   return { did: req.viewerDid, handle: actor?.handle ?? null, displayName: actor?.displayName ?? null }

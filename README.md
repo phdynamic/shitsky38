@@ -106,6 +106,7 @@ or a `SIGN-IN IS BROKEN` line naming what is wrong.
 | `/me` | your ballot, re-read from your repo on every visit |
 | `/profile/:didOrHandle` | one nominee: standing, voters, pinned post, self-controls |
 | `/faq` | the rules |
+| `/admin` | audit view: who voted for an account, and who it voted for. 404s for everyone but `ADMIN_DIDS` |
 | `/api/leaderboard` | the standings as JSON |
 | `/lexicons` | the record schemas |
 

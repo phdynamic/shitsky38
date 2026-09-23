@@ -1,13 +1,14 @@
 import { html, raw } from './html.js'
-import { config, votingState } from '../config.js'
+import { config, isAdmin, votingState } from '../config.js'
 import { asset } from '../assets.js'
 import { CREATOR_KOFI, creator } from '../creator.js'
 
-const navItems = [
+const navFor = (viewer) => [
   ['/', 'Leaderboard'],
   ['/vote', 'Vote'],
   ['/me', 'My ballot'],
   ['/faq', 'Questions'],
+  ...(isAdmin(viewer?.did) ? [['/admin', 'Audit']] : []),
 ]
 
 const countdown = () => {
@@ -42,7 +43,7 @@ export const layout = ({ title, viewer, path = '/', body, head = '' }) => html`<
         <span class="wordmark-shit">Shitsky</span><span class="wordmark-num">38</span>
       </a>
       <nav>
-        ${navItems.map(
+        ${navFor(viewer).map(
           ([href, label]) => html`<a href="${href}" class="${path === href ? 'active' : ''}">${label}</a>`,
         )}
       </nav>

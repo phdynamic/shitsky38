@@ -73,6 +73,11 @@ export const config = {
   appviewUrl: env('APPVIEW_URL', 'https://public.api.bsky.app').replace(/\/$/, ''),
   jetstreamUrl: env('JETSTREAM_URL', 'wss://jetstream2.us-east.bsky.network/subscribe'),
   jetstreamEnabled: env('JETSTREAM_ENABLED', '1') !== '0',
+  // DIDs allowed into the audit view. A DID rather than a handle, because a handle can move.
+  adminDids: env('ADMIN_DIDS', 'did:plc:plpviiolyyfxmopm6cqloy2b')
+    .split(',')
+    .map((did) => did.trim())
+    .filter(Boolean),
   privateKeys: ['PRIVATE_KEY_1', 'PRIVATE_KEY_2', 'PRIVATE_KEY_3']
     .map((key) => env(key, ''))
     .filter(Boolean)
@@ -81,6 +86,8 @@ export const config = {
 }
 
 export const redirectUri = `${config.publicUrl}/oauth/callback`
+
+export const isAdmin = (did) => Boolean(did) && config.adminDids.includes(did)
 
 export const votingState = (now = new Date()) => {
   if (now < config.votingOpensAt) return 'before'

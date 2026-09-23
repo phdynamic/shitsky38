@@ -410,3 +410,80 @@ export const errorPage = (message) => html`
     <p><a href="/">Back to the list.</a></p>
   </section>
 `
+
+/* ---------------------------------------------------------------- admin ---- */
+
+const auditList = (rows, actors, emptyText) =>
+  rows.length === 0
+    ? html`<p class="muted">${emptyText}</p>`
+    : html`<ul class="results">
+        ${rows.map((row) => {
+          const actor = actors.get(row.did) ?? { did: row.did }
+          return html`<li class="row">
+            <a class="who" href="/profile/${row.did}">
+              ${avatar(actor, 'sm')}
+              <span class="names">
+                <span class="name">${displayName(actor)}</span>
+                <span class="handle">${handleOf(actor)}</span>
+              </span>
+            </a>
+            <span class="muted small">${new Date(row.created_at).toISOString().slice(0, 10)}</span>
+            ${row.counted ? '' : html`<span class="withdrew">not counted</span>`}
+          </li>`
+        })}
+      </ul>`
+
+export const adminPage = ({ query, error, subject, nominee, standing, received = [], cast = [], actors }) => html`
+  <section class="hero narrow">
+    <h1>Audit</h1>
+    <p class="lede">
+      Who voted for an account, and who that account voted for. Only you can see this page — everything on
+      it is public record either way.
+    </p>
+  </section>
+
+  <form class="search" action="/admin" method="get" role="search">
+    <input
+      type="search"
+      name="q"
+      value="${query ?? ''}"
+      placeholder="A handle or a DID — e.g. mardigroan.bsky.social"
+      autocomplete="off"
+      autofocus
+    />
+    <button class="btn" type="submit">Look up</button>
+  </form>
+
+  ${error ? html`<p class="error">${error}</p>` : ''}
+
+  ${subject
+    ? html`
+        <section class="profile">
+          ${avatar(subject, 'md')}
+          <div class="profile-meta">
+            <h2 style="margin:0">${displayName(subject)}</h2>
+            <p class="handle">${handleOf(subject)}</p>
+            <p class="standing">
+              ${nominee?.optOut
+                ? html`<span class="opted-out">Withdrew from the list</span>`
+                : standing
+                  ? html`<b>#${standing.rank}</b> with ${plural(standing.votes, 'counted vote', 'counted votes')}`
+                  : html`<span class="muted">No counted votes.</span>`}
+            </p>
+          </div>
+        </section>
+
+        <h2 class="audit-heading">
+          Voted for by ${received.length}
+          ${received.length > 0 ? html`<span class="muted">(${received.filter((r) => r.counted).length} counted)</span>` : ''}
+        </h2>
+        ${auditList(received, actors, 'Nobody has voted for this account.')}
+
+        <h2 class="audit-heading">
+          Their ballot: ${cast.length}
+          ${cast.length > 0 ? html`<span class="muted">(${cast.filter((r) => r.counted).length} counted)</span>` : ''}
+        </h2>
+        ${auditList(cast, actors, 'This account has not voted for anybody.')}
+      `
+    : ''}
+`

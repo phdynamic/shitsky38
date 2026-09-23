@@ -6,6 +6,7 @@ import { viewerMiddleware } from './session.js'
 import { authRouter } from './routes/auth.js'
 import { apiRouter } from './routes/api.js'
 import { pagesRouter } from './routes/pages.js'
+import { adminRouter } from './routes/admin.js'
 import { layout } from './views/layout.js'
 import { errorPage, notFoundPage } from './views/pages.js'
 import { startJetstream } from './jetstream.js'
@@ -29,6 +30,7 @@ app.get('/healthz', (_req, res) => {
 
 app.use('/api', apiRouter)
 app.use(authRouter)
+app.use(adminRouter)
 app.use(pagesRouter)
 
 app.use((req, res) => {

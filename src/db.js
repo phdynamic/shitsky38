@@ -313,6 +313,48 @@ export const getNomineeProfile = (did) => {
 export const deleteNomineeProfile = (did) => delProfileStmt().run(did).changes
 
 /** Of these accounts, which have withdrawn. Used to flag dead votes on a ballot. */
+/* ---------------------------------------------------------------- audit ---- */
+
+// Every vote row in either direction, each marked with whether it counts toward the board:
+// inside the voter's first MAX_VOTES, before the deadline, and not aimed at somebody who withdrew.
+const AUDIT = `
+  WITH ordered AS (
+    SELECT v.voter_did, v.subject_did, v.created_at,
+           ROW_NUMBER() OVER (
+             PARTITION BY v.voter_did ORDER BY v.created_at ASC, v.subject_did ASC
+           ) AS n,
+           COALESCE(p.opted_out, 0) AS subject_out
+    FROM vote v
+    LEFT JOIN nominee_profile p ON p.did = v.subject_did
+  ),
+  marked AS (
+    SELECT voter_did, subject_did, created_at,
+           CASE WHEN n <= :max_votes AND created_at <= :closes AND subject_out = 0
+                THEN 1 ELSE 0 END AS counted
+    FROM ordered
+  )
+`
+
+const votersForStmt = stmt(`
+  ${AUDIT}
+  SELECT voter_did AS did, created_at, counted FROM marked
+  WHERE subject_did = :did
+  ORDER BY created_at ASC
+`)
+
+const ballotOfStmt = stmt(`
+  ${AUDIT}
+  SELECT subject_did AS did, created_at, counted FROM marked
+  WHERE voter_did = :did
+  ORDER BY created_at ASC
+`)
+
+/** Who voted for this account. */
+export const votersFor = (did) => votersForStmt().all({ ...bounds(), did })
+
+/** Who this account voted for. */
+export const ballotOf = (did) => ballotOfStmt().all({ ...bounds(), did })
+
 export const optedOutAmong = (dids) => {
   if (dids.length === 0) return new Set()
   const holes = dids.map(() => '?').join(', ')

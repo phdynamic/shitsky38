@@ -419,3 +419,12 @@ footer p { margin: 0.4rem 0; }
   padding: 0.15rem 0.5rem;
   white-space: nowrap;
 }
+
+.audit-heading {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  margin: 2rem 0 0.75rem;
+}
+.audit-heading .muted { text-transform: none; letter-spacing: 0; font-weight: 400; }
