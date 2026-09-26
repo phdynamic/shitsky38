@@ -15,13 +15,15 @@ const retryable = (err) =>
  * one retry turns most of those stalls into a slightly slow answer instead of a failure, and
  * costs no more in the worst case than the single long attempt it replaces.
  */
-const json = async (url, { timeout = 5_000, attempts = 2 } = {}) => {
+const json = async (url, { timeout = 5_000, attempts = 2, signal } = {}) => {
   let last
   for (let attempt = 1; attempt <= attempts; attempt++) {
+    if (signal?.aborted) throw signal.reason ?? new Error('aborted')
     try {
       const res = await fetch(url, {
         headers: { accept: 'application/json', 'user-agent': USER_AGENT },
-        signal: AbortSignal.timeout(timeout),
+        // Give up on our own deadline, or as soon as whoever asked has stopped caring.
+        signal: signal ? AbortSignal.any([AbortSignal.timeout(timeout), signal]) : AbortSignal.timeout(timeout),
       })
       if (!res.ok) {
         const body = await res.text().catch(() => '')
@@ -32,21 +34,21 @@ const json = async (url, { timeout = 5_000, attempts = 2 } = {}) => {
       return await res.json()
     } catch (err) {
       last = err
-      if (attempt === attempts || !retryable(err)) throw err
+      if (signal?.aborted || attempt === attempts || !retryable(err)) throw err
       console.warn(`[bluesky] ${err.name === 'TimeoutError' ? 'timed out' : err.message} — retrying ${url}`)
     }
   }
   throw last
 }
 
-const xrpc = (base, nsid, params = {}) => {
+const xrpc = (base, nsid, params = {}, options) => {
   const url = new URL(`${base}/xrpc/${nsid}`)
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null) continue
     if (Array.isArray(value)) value.forEach((v) => url.searchParams.append(key, v))
     else url.searchParams.set(key, String(value))
   }
-  return json(url.toString())
+  return json(url.toString(), options)
 }
 
 const chunk = (items, size) => {
@@ -66,7 +68,7 @@ const normalize = (profile) => ({
 const SEARCH_TTL_MS = 60_000
 const searchCache = new Map()
 
-export const searchActors = async (q, limit = 12) => {
+export const searchActors = async (q, limit = 12, { signal } = {}) => {
   const query = q?.trim()
   if (!query) return []
 
@@ -74,7 +76,7 @@ export const searchActors = async (q, limit = 12) => {
   const hit = searchCache.get(key)
   if (hit && Date.now() - hit.at < SEARCH_TTL_MS) return hit.actors
 
-  const data = await xrpc(config.appviewUrl, 'app.bsky.actor.searchActors', { q: query, limit })
+  const data = await xrpc(config.appviewUrl, 'app.bsky.actor.searchActors', { q: query, limit }, { signal })
   const actors = (data.actors ?? []).map(normalize)
   for (const actor of actors) upsertActor(actor)
 
@@ -88,7 +90,7 @@ export const searchActors = async (q, limit = 12) => {
 const HANDLE_TTL_MS = 5 * 60 * 1000
 const handleCache = new Map()
 
-export const resolveHandle = async (handle) => {
+export const resolveHandle = async (handle, { signal } = {}) => {
   const clean = handle.trim().replace(/^@/, '')
   if (clean.startsWith('did:')) return clean
 
@@ -101,7 +103,7 @@ export const resolveHandle = async (handle) => {
   }
 
   try {
-    const data = await xrpc(config.appviewUrl, 'com.atproto.identity.resolveHandle', { handle: clean })
+    const data = await xrpc(config.appviewUrl, 'com.atproto.identity.resolveHandle', { handle: clean }, { signal })
     handleCache.set(clean, { at: Date.now(), did: data.did })
     return data.did
   } catch (err) {
@@ -156,6 +158,30 @@ export const hydrate = async (dids) => {
     if (!cached.has(did)) cached.set(did, { did, handle: null, displayName: null, avatar: null, description: null })
   }
   return cached
+}
+
+const POST_WEB_URL = /^https?:\/\/(?:[a-z0-9-]+\.)*bsky\.app\/profile\/([^/?#]+)\/post\/([A-Za-z0-9.\-_~]+)/i
+const POST_AT_URI = /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([A-Za-z0-9.\-_~]+)$/
+
+/**
+ * People paste what the Bluesky app gives them, which is a web link, not an AT-URI. Accept both
+ * and hand back the AT-URI the API wants, or null when it is neither.
+ */
+export const toPostUri = async (input) => {
+  const value = String(input ?? '').trim()
+  if (!value) return null
+
+  const match = POST_AT_URI.exec(value) ?? POST_WEB_URL.exec(value)
+  if (!match) return null
+
+  const [, actor, rkey] = match
+  const subject = decodeURIComponent(actor)
+  try {
+    const did = subject.startsWith('did:') ? subject : await resolveHandle(subject)
+    return `at://${did}/app.bsky.feed.post/${rkey}`
+  } catch {
+    return null
+  }
 }
 
 export const getPosts = async (uris) => {

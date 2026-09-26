@@ -5,7 +5,7 @@ import { login, logout } from '../session.js'
 import { layout } from '../views/layout.js'
 import { errorPage, loginPage } from '../views/pages.js'
 import { syncBallotFromRepo, syncProfileFromRepo } from '../ballot.js'
-import { resolveHandle } from '../bluesky.js'
+import { handleCandidates, resolveHandle } from '../bluesky.js'
 
 export const authRouter = Router()
 
@@ -41,23 +41,30 @@ authRouter.post('/login', async (req, res) => {
     })
 
     // Resolve the handle ourselves over HTTPS. The client's own resolver reaches for a DNS TXT
-    // record first, which plenty of networks (and containers) will not answer.
+    // record first, which plenty of networks (and containers) will not answer. People also type
+    // the bare name in front of .bsky.social, so try that too rather than failing the sign-in.
     let subject = handle
-    try {
-      subject = await resolveHandle(handle)
-    } catch {
-      /* fall through and let the OAuth client try its own resolution */
+    for (const candidate of handleCandidates(handle)) {
+      try {
+        subject = await resolveHandle(candidate)
+        break
+      } catch {
+        /* try the next shape, then let the OAuth client attempt its own resolution */
+      }
     }
 
     const url = await oauthClient.authorize(subject, { state: next, signal: ac.signal })
     res.redirect(url.toString())
   } catch (err) {
-    console.warn('[auth] authorize failed:', err.message)
-    const message = /resolve|handle/i.test(err.message)
-      ? `We could not find an account for "${handle}".`
-      : /scope|permission/i.test(err.message)
-        ? 'Your server did not accept the permissions this site asks for. Please let us know which server you are on.'
-        : 'Could not start the sign-in. Try again in a moment.'
+    const typo = /resolve identity|resolve handle/i.test(err.message)
+    console[typo ? 'log' : 'warn'](`[auth] ${typo ? 'handle not found' : 'authorize failed'}: ${err.message}`)
+    const message = handle.includes('@')
+      ? 'That looks like an email address. Sign in with your Bluesky handle, like you.bsky.social.'
+      : /resolve|handle|identity/i.test(err.message)
+        ? `We could not find an account for "${handle}". Check the spelling, or try the full handle.`
+        : /scope|permission/i.test(err.message)
+          ? 'Your server did not accept the permissions this site asks for. Please let us know which server you are on.'
+          : 'Bluesky did not answer just now. Try again in a moment.'
     res.redirect(`/login?error=${encodeURIComponent(message)}`)
   }
 })
@@ -74,7 +81,10 @@ authRouter.get('/oauth/callback', async (req, res) => {
 
     res.redirect(safeNext(state))
   } catch (err) {
-    console.warn('[auth] callback failed:', err.message)
+    const expected = /rejected the request|Unknown authorization session|request has expired|was aborted/i.test(
+      err.message,
+    )
+    console[expected ? 'log' : 'warn'](`[auth] sign-in ${expected ? 'not completed' : 'callback failed'}: ${err.message}`)
     res
       .status(400)
       .type('html')

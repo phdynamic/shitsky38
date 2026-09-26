@@ -47,6 +47,10 @@ cp .env.example .env
 npm run dev
 ```
 
+`npm test` checks the counting rules — vote tallying, the ballot cap, opt-out, the deadline, shared
+ranks and tie ordering — plus what the pinned-post field accepts. Each suite runs against its own
+throwaway database.
+
 Then open <http://127.0.0.1:3000> — **not** `localhost:3000`. atproto's development OAuth client
 requires the redirect to be a loopback *IP*, and the cookie follows the same origin.
 

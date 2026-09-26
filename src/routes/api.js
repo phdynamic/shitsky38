@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { config, votingState } from '../config.js'
 import * as store from '../db.js'
-import { handleCandidates, hydrate, resolveHandle, searchActors } from '../bluesky.js'
+import { handleCandidates, hydrate, resolveHandle, searchActors, toPostUri } from '../bluesky.js'
 import { AppError, setOptOut, setPinnedPost, toggleVote } from '../ballot.js'
 import { requireViewer } from '../session.js'
 
@@ -10,8 +10,19 @@ export const apiRouter = Router()
 const upstream = (err) =>
   err.name === 'TimeoutError' || err.name === 'AbortError' || err.status >= 500
 
+// The PDS refusing to write because of the state of somebody's account is worth saying plainly.
+const ACCOUNT_STATE = {
+  AccountDeactivated: 'Your Bluesky account is deactivated, so votes cannot be written to it. Reactivate it in the Bluesky app and try again.',
+  AccountTakedown: 'Your Bluesky account is suspended, so votes cannot be written to it.',
+  AccountSuspended: 'Your Bluesky account is suspended, so votes cannot be written to it.',
+}
+
 const fail = (res, err) => {
   if (err instanceof AppError) return res.status(err.status).json({ error: err.code, message: err.message })
+  if (ACCOUNT_STATE[err?.error]) {
+    console.log(`[api] account not writable: ${err.error}`)
+    return res.status(403).json({ error: err.error, message: ACCOUNT_STATE[err.error] })
+  }
   if (upstream(err)) {
     // Bluesky's API not answering is a different thing from this app being broken, and the
     // person searching should be told which it is.
@@ -26,12 +37,22 @@ const fail = (res, err) => {
 
 apiRouter.get('/search', async (req, res) => {
   const q = String(req.query.q ?? '').trim()
+
+  // Somebody typing a handle abandons a search per keystroke. Without this, every one of those
+  // still runs to completion against Bluesky long after the browser stopped listening.
+  const ac = new AbortController()
+  res.on('close', () => {
+    if (!res.writableEnded) ac.abort()
+  })
+
   try {
-    let actors = await searchActors(q, 15)
+    let actors = await searchActors(q, 15, { signal: ac.signal })
 
     // An exact account comes first, whether it was typed as a full handle, a DID, or the bare
     // name in front of .bsky.social — search ranking misses that last one often enough to matter.
-    const resolved = await Promise.allSettled(handleCandidates(q).map((candidate) => resolveHandle(candidate)))
+    const resolved = await Promise.allSettled(
+      handleCandidates(q).map((candidate) => resolveHandle(candidate, { signal: ac.signal })),
+    )
     const exactDids = resolved
       .filter((outcome) => outcome.status === 'fulfilled' && outcome.value)
       .map((outcome) => outcome.value)
@@ -56,6 +77,7 @@ apiRouter.get('/search', async (req, res) => {
       maxVotes: config.maxVotes,
     })
   } catch (err) {
+    if (ac.signal.aborted) return // the browser moved on; nothing to report
     fail(res, err)
   }
 })
@@ -80,7 +102,18 @@ apiRouter.post('/profile', requireViewer, async (req, res) => {
   try {
     if (votingState() === 'closed') throw new AppError(403, 'voting_closed', 'Voting is closed.')
     if (Object.hasOwn(req.body ?? {}, 'optOut')) await setOptOut(req.viewerDid, Boolean(req.body.optOut))
-    if (Object.hasOwn(req.body ?? {}, 'pinnedPost')) await setPinnedPost(req.viewerDid, req.body.pinnedPost || null)
+    if (Object.hasOwn(req.body ?? {}, 'pinnedPost')) {
+      const raw = String(req.body.pinnedPost ?? '').trim()
+      const uri = raw ? await toPostUri(raw) : null
+      if (raw && !uri) {
+        throw new AppError(
+          400,
+          'bad_post',
+          'That does not look like a link to a Bluesky post. Paste the post\'s link, e.g. https://bsky.app/profile/you.bsky.social/post/abc123',
+        )
+      }
+      await setPinnedPost(req.viewerDid, uri)
+    }
     res.json({ ok: true, profile: store.getNomineeProfile(req.viewerDid) })
   } catch (err) {
     fail(res, err)

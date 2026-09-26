@@ -223,9 +223,9 @@ const selfControls = ({ nominee }) => html`<section class="self-controls">
   <div class="control-row">
     <div>
       <b>Pin your finest work</b>
-      <p class="muted">An AT-URI of one of your posts, shown on your entry.</p>
+      <p class="muted">Paste the link to one of your posts, shown on your entry.</p>
       <form id="pin-form" class="inline-form">
-        <input type="text" name="pinnedPost" value="${nominee?.pinnedPost ?? ''}" placeholder="at://did:plc:…/app.bsky.feed.post/…" />
+        <input type="text" name="pinnedPost" value="${nominee?.pinnedPost ?? ''}" placeholder="https://bsky.app/profile/you.bsky.social/post/…" />
         <button class="btn btn-small" type="submit">Save</button>
       </form>
     </div>

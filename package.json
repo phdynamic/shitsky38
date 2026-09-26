@@ -11,7 +11,10 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "keygen": "node scripts/keygen.js",
-    "backfill": "node scripts/backfill.js"
+    "backfill": "node scripts/backfill.js",
+    "test": "DB_PATH=test/tmp-tally.sqlite node test/tally.test.js && LIST_SIZE=4 DB_PATH=test/tmp-rank.sqlite node test/rank.test.js && DB_PATH=test/tmp-posturi.sqlite node test/posturi.test.js",
+    "pretest": "rm -f test/tmp-*.sqlite*",
+    "posttest": "rm -f test/tmp-*.sqlite*"
   },
   "dependencies": {
     "@atproto/api": "^0.20.44",

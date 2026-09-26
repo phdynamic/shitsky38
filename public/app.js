@@ -223,25 +223,30 @@ if (searchInput && resultsList) {
     resultsList.replaceChildren(li)
   }
 
+  let inFlight
   const run = async () => {
     const q = searchInput.value.trim()
     if (q.length < 2) return resultsList.replaceChildren()
     const mine = ++seq
+    // Drop the previous search rather than letting it finish somewhere nobody is looking.
+    inFlight?.abort()
+    inFlight = new AbortController()
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`)
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: inFlight.signal })
       const data = await res.json().catch(() => ({}))
       if (mine !== seq) return
       // An empty list and a failed search look identical unless we say so.
       if (!res.ok) return message(data.message || 'Search is not working right now. Try again in a moment.')
       renderResults(data)
-    } catch {
+    } catch (err) {
+      if (err.name === 'AbortError') return
       if (mine === seq) message('Could not reach the server. Check your connection and try again.')
     }
   }
 
   searchInput.addEventListener('input', () => {
     clearTimeout(timer)
-    timer = setTimeout(run, 220)
+    timer = setTimeout(run, 350)
   })
   searchInput.form?.addEventListener('submit', (event) => {
     event.preventDefault()

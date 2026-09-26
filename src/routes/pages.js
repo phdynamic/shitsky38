@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { readFileSync, readdirSync } from 'node:fs'
 import { config } from '../config.js'
 import * as store from '../db.js'
-import { getPosts, hydrate, resolveHandle } from '../bluesky.js'
+import { getPosts, hydrate, resolveHandle, toPostUri } from '../bluesky.js'
 import { syncBallotFromRepo, syncProfileFromRepo } from '../ballot.js'
 import { layout } from '../views/layout.js'
 import { faqPage, leaderboardPage, mePage, notFoundPage, profilePage, votePage } from '../views/pages.js'
@@ -112,7 +112,11 @@ pagesRouter.get('/profile/:actor', async (req, res) => {
   const actor = (await hydrate([did])).get(did) ?? { did }
   const entry = store.standing(did)
   const nominee = store.getNomineeProfile(did)
-  const pinned = nominee?.pinnedPost ? (await getPosts([nominee.pinnedPost])).get(nominee.pinnedPost) : null
+  // Pins saved before the field accepted web links are stored as bsky.app URLs. Convert on the
+  // way out so they work without anybody re-saving, and skip the lookup entirely when whatever
+  // is stored is not a post link at all — otherwise every view of this page retries a 400.
+  const pinnedUri = nominee?.pinnedPost ? await toPostUri(nominee.pinnedPost) : null
+  const pinned = pinnedUri ? (await getPosts([pinnedUri])).get(pinnedUri) : null
   const ballot = req.viewerDid ? store.getBallot(req.viewerDid) : []
 
   send(
