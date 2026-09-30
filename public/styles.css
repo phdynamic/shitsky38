@@ -296,7 +296,6 @@ footer p { margin: 0.4rem 0; }
 .pinned p { margin: 0 0 0.6rem; white-space: pre-wrap; font-size: 1.05rem; }
 .pinned cite { font-style: normal; font-size: 0.8rem; color: var(--ink-dim); }
 
-
 .self-controls {
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -446,9 +445,3 @@ footer p { margin: 0.4rem 0; }
   font-style: italic;
 }
 
-.writeup-stats {
-  margin: 0 0 0.7rem;
-  font-size: 0.78rem;
-  color: var(--ink-dim);
-  font-variant-numeric: tabular-nums;
-}

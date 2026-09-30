@@ -520,13 +520,6 @@ export const writeupsPage = ({ doc, entries, actors, stale }) => html`
           </a>
           <span class="tally"><b>${num(entry.votes)}</b><small>votes</small></span>
         </div>
-        ${entry.stats
-          ? html`<p class="writeup-stats">
-              ${num(entry.stats.posts)} posts · ${entry.stats.perDay}/day · ${entry.stats.replyPct}% replies ·
-              median ${num(entry.stats.medianLikes)} likes, best ${num(entry.stats.bestLikes)} ·
-              ${entry.stats.from} → ${entry.stats.to}
-            </p>`
-          : ''}
         <p class="writeup-note">${entry.note}</p>
         <blockquote class="writeup-line">${entry.line}</blockquote>
       </li>`
