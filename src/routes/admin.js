@@ -1,9 +1,10 @@
 import { Router } from 'express'
-import { isAdmin } from '../config.js'
+import { readFileSync } from 'node:fs'
+import { config, isAdmin } from '../config.js'
 import * as store from '../db.js'
 import { hydrate, resolveHandle } from '../bluesky.js'
 import { layout } from '../views/layout.js'
-import { adminPage, notFoundPage } from '../views/pages.js'
+import { adminPage, notFoundPage, writeupsPage } from '../views/pages.js'
 import { viewerOf } from './pages.js'
 
 export const adminRouter = Router()
@@ -67,6 +68,40 @@ adminRouter.get('/admin', async (req, res) => {
         cast: castRaw,
         actors,
       }),
+    }).toString(),
+  )
+})
+
+adminRouter.get('/admin/writeups', async (req, res) => {
+  const viewer = await viewerOf(req)
+
+  let doc
+  try {
+    doc = JSON.parse(readFileSync('content/writeups.json', 'utf8'))
+  } catch {
+    return res
+      .status(404)
+      .type('html')
+      .send(layout({ title: 'Not found', viewer, path: '/admin', body: notFoundPage() }).toString())
+  }
+
+  // Show them in the order the board is in today, and say so when the board has moved on.
+  const board = new Map(store.topList().slice(0, config.listSize).map((row) => [row.did, row]))
+  const entries = doc.entries
+    .map((entry) => ({ ...entry, ...(board.get(entry.did) ?? {}) }))
+    .sort((a, b) => a.rank - b.rank || a.handle.localeCompare(b.handle))
+  const stale = [
+    ...doc.entries.filter((entry) => !board.has(entry.did)),
+    ...[...board.keys()].filter((did) => !doc.entries.some((entry) => entry.did === did)),
+  ]
+
+  const actors = await hydrate(entries.map((entry) => entry.did))
+  res.type('html').send(
+    layout({
+      title: 'The board, annotated',
+      viewer,
+      path: '/admin',
+      body: writeupsPage({ doc, entries, actors, stale }),
     }).toString(),
   )
 })

@@ -428,3 +428,20 @@ footer p { margin: 0.4rem 0; }
   margin: 2rem 0 0.75rem;
 }
 .audit-heading .muted { text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+.writeups { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1.5rem; }
+.writeup {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem 1.2rem;
+  background: var(--bg-card);
+}
+.writeup-head { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.75rem; }
+.writeup-note { margin: 0 0 0.9rem; line-height: 1.6; }
+.writeup-line {
+  margin: 0;
+  padding: 0.6rem 0 0.6rem 1rem;
+  border-left: 3px solid var(--gold);
+  color: var(--ink-dim);
+  font-style: italic;
+}

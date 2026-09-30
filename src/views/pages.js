@@ -442,6 +442,8 @@ export const adminPage = ({ query, error, subject, nominee, standing, received =
     </p>
   </section>
 
+  <p class="muted"><a href="/admin/writeups">The board, annotated →</a></p>
+
   <form class="search" action="/admin" method="get" role="search">
     <input
       type="search"
@@ -486,4 +488,41 @@ export const adminPage = ({ query, error, subject, nominee, standing, received =
         ${auditList(cast, actors, 'This account has not voted for anybody.')}
       `
     : ''}
+`
+
+export const writeupsPage = ({ doc, entries, actors, stale }) => html`
+  <section class="hero narrow">
+    <h1>The board, annotated</h1>
+    <p class="lede">
+      A short piece on each of the ${entries.length} accounts inside the cut, written from their public posts.
+      Only you can see this page.
+    </p>
+    <p class="muted small">
+      Written ${doc.generatedAt}. ${stale.length > 0
+        ? html`<b>${stale.length}</b> ${stale.length === 1 ? 'account has' : 'accounts have'} moved in or out of the
+          cut since — ask for a refresh.`
+        : 'The board has not changed since.'}
+    </p>
+  </section>
+
+  <ol class="writeups">
+    ${entries.map((entry) => {
+      const actor = actors.get(entry.did) ?? { did: entry.did }
+      return html`<li class="writeup">
+        <div class="writeup-head">
+          <span class="rank in">${entry.rank}</span>
+          <a class="who" href="/profile/${entry.did}">
+            ${avatar(actor)}
+            <span class="names">
+              <span class="name">${displayName(actor)}</span>
+              <span class="handle">${handleOf(actor)}</span>
+            </span>
+          </a>
+          <span class="tally"><b>${num(entry.votes)}</b><small>votes</small></span>
+        </div>
+        <p class="writeup-note">${entry.note}</p>
+        <blockquote class="writeup-line">${entry.line}</blockquote>
+      </li>`
+    })}
+  </ol>
 `

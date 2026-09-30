@@ -111,6 +111,7 @@ or a `SIGN-IN IS BROKEN` line naming what is wrong.
 | `/profile/:didOrHandle` | one nominee: standing, voters, pinned post, self-controls |
 | `/faq` | the rules |
 | `/admin` | audit view: who voted for an account, and who it voted for. 404s for everyone but `ADMIN_DIDS` |
+| `/admin/writeups` | a short piece on each account inside the cut, from `content/writeups.json`. Same gate |
 | `/api/leaderboard` | the standings as JSON |
 | `/lexicons` | the record schemas |
 
