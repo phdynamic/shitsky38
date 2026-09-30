@@ -494,11 +494,11 @@ export const writeupsPage = ({ doc, entries, actors, stale }) => html`
   <section class="hero narrow">
     <h1>The board, annotated</h1>
     <p class="lede">
-      A short piece on each of the ${entries.length} accounts inside the cut, written from their public posts.
-      Only you can see this page.
+      A piece on each of the ${entries.length} accounts inside the cut, written from about a year of their public
+      posts. Only you can see this page.
     </p>
     <p class="muted small">
-      Written ${doc.generatedAt}. ${stale.length > 0
+      ${doc.window ?? ''} ${stale.length > 0
         ? html`<b>${stale.length}</b> ${stale.length === 1 ? 'account has' : 'accounts have'} moved in or out of the
           cut since — ask for a refresh.`
         : 'The board has not changed since.'}
@@ -520,6 +520,13 @@ export const writeupsPage = ({ doc, entries, actors, stale }) => html`
           </a>
           <span class="tally"><b>${num(entry.votes)}</b><small>votes</small></span>
         </div>
+        ${entry.stats
+          ? html`<p class="writeup-stats">
+              ${num(entry.stats.posts)} posts · ${entry.stats.perDay}/day · ${entry.stats.replyPct}% replies ·
+              median ${num(entry.stats.medianLikes)} likes, best ${num(entry.stats.bestLikes)} ·
+              ${entry.stats.from} → ${entry.stats.to}
+            </p>`
+          : ''}
         <p class="writeup-note">${entry.note}</p>
         <blockquote class="writeup-line">${entry.line}</blockquote>
       </li>`
