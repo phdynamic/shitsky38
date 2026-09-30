@@ -1,10 +1,10 @@
 import { Router } from 'express'
-import { readFileSync } from 'node:fs'
 import { config, isAdmin } from '../config.js'
 import * as store from '../db.js'
 import { hydrate, resolveHandle } from '../bluesky.js'
 import { layout } from '../views/layout.js'
 import { adminPage, notFoundPage, writeupsPage } from '../views/pages.js'
+import { isPublished, loadWriteups, setPublished } from '../writeups.js'
 import { viewerOf } from './pages.js'
 
 export const adminRouter = Router()
@@ -74,18 +74,15 @@ adminRouter.get('/admin', async (req, res) => {
 
 adminRouter.get('/admin/writeups', async (req, res) => {
   const viewer = await viewerOf(req)
-
-  let doc
-  try {
-    doc = JSON.parse(readFileSync('content/writeups.json', 'utf8'))
-  } catch {
+  const doc = loadWriteups()
+  if (!doc) {
     return res
       .status(404)
       .type('html')
       .send(layout({ title: 'Not found', viewer, path: '/admin', body: notFoundPage() }).toString())
   }
 
-  // Show them in the order the board is in today, and say so when the board has moved on.
+  // Order by the board as it stands today, and say so when it has moved on.
   const board = new Map(store.topList().slice(0, config.listSize).map((row) => [row.did, row]))
   const entries = doc.entries
     .map((entry) => ({ ...entry, ...(board.get(entry.did) ?? {}) }))
@@ -101,7 +98,43 @@ adminRouter.get('/admin/writeups', async (req, res) => {
       title: 'The board, annotated',
       viewer,
       path: '/admin',
-      body: writeupsPage({ doc, entries, actors, stale }),
+      body: writeupsPage({ doc, entries, actors, stale, published: isPublished() }),
     }).toString(),
   )
+})
+
+adminRouter.post('/admin/writeups', (req, res) => {
+  const { did, note, line, hidden, revert } = req.body ?? {}
+  if (typeof did !== 'string' || !did.startsWith('did:')) {
+    return res.status(400).json({ error: 'bad_did', message: 'Which entry?' })
+  }
+
+  const doc = loadWriteups()
+  const entry = doc?.entries.find((e) => e.did === did)
+  if (!entry) return res.status(404).json({ error: 'unknown', message: 'That entry is not in the draft.' })
+
+  if (revert) {
+    // Drop the hand-written version and fall back to the generated draft.
+    store.upsertWriteup({ did, note: null, line: null, hidden: false, baseHash: null })
+    return res.json({ ok: true, note: entry.generated.note, line: entry.generated.line, edited: false })
+  }
+
+  const nextNote = typeof note === 'string' ? note.trim().slice(0, 4000) : entry.note
+  const nextLine = typeof line === 'string' ? line.trim().slice(0, 600) : entry.line
+  const nextHidden = typeof hidden === 'boolean' ? hidden : entry.hidden
+  const isEdit = nextNote !== entry.generated.note || nextLine !== entry.generated.line
+
+  store.upsertWriteup({
+    did,
+    note: isEdit ? nextNote : null,
+    line: isEdit ? nextLine : null,
+    hidden: nextHidden,
+    baseHash: isEdit ? entry.baseHash : null,
+  })
+  res.json({ ok: true, edited: isEdit, hidden: nextHidden })
+})
+
+adminRouter.post('/admin/writeups/publish', (req, res) => {
+  setPublished(Boolean(req.body?.publish))
+  res.json({ ok: true, published: isPublished() })
 })

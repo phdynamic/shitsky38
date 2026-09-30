@@ -282,3 +282,84 @@ $('#pin-form')?.addEventListener('submit', async (event) => {
     toast(err.message, 'error')
   }
 })
+
+/* ------------------------------------------------------- write-up editor ---- */
+
+const writeupsList = document.querySelector('.writeups')
+
+if (writeupsList) {
+  const say = (li, text, ok = true) => {
+    const status = li.querySelector('.writeup-status')
+    if (!status) return
+    status.textContent = text
+    status.style.color = ok ? 'var(--good)' : 'var(--hot)'
+    setTimeout(() => {
+      if (status.textContent === text) status.textContent = ''
+    }, 2500)
+  }
+
+  const save = async (li, body) => {
+    const res = await fetch('/admin/writeups', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ did: li.dataset.did, ...body }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data.message || 'Could not save.')
+    return data
+  }
+
+  writeupsList.addEventListener('click', async (event) => {
+    const button = event.target.closest('button[data-save], button[data-hide], button[data-revert]')
+    if (!button) return
+    event.preventDefault()
+    const li = button.closest('.writeup')
+    button.disabled = true
+
+    try {
+      if (button.dataset.save !== undefined) {
+        await save(li, {
+          note: li.querySelector('textarea[name="note"]').value,
+          line: li.querySelector('input[name="line"]').value,
+        })
+        say(li, 'Saved')
+      } else if (button.dataset.hide !== undefined) {
+        const hide = button.dataset.hidden !== 'true'
+        await save(li, { hidden: hide })
+        button.dataset.hidden = hide ? 'true' : 'false'
+        button.textContent = hide ? 'Include' : 'Leave out'
+        li.classList.toggle('is-hidden', hide)
+        say(li, hide ? 'Left out' : 'Included')
+      } else {
+        const data = await save(li, { revert: true })
+        li.querySelector('textarea[name="note"]').value = data.note
+        li.querySelector('input[name="line"]').value = data.line
+        li.querySelector('.writeup-flag')?.remove()
+        button.remove()
+        say(li, 'Back to the draft')
+      }
+    } catch (err) {
+      say(li, err.message, false)
+    } finally {
+      button.disabled = false
+    }
+  })
+}
+
+const publishToggle = document.querySelector('#publish-toggle')
+publishToggle?.addEventListener('click', async () => {
+  const publish = publishToggle.dataset.publish === 'true'
+  publishToggle.disabled = true
+  try {
+    const res = await fetch('/admin/writeups/publish', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ publish }),
+    })
+    if (!res.ok) throw new Error('Could not change that.')
+    location.reload()
+  } catch (err) {
+    toast(err.message, 'error')
+    publishToggle.disabled = false
+  }
+})

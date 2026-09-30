@@ -30,7 +30,7 @@ export const voteButton = ({ did, voted, disabled, viewer }) => {
   </button>`
 }
 
-const row = ({ entry, actor, viewer, voted, outOfVotes }) => html`<li class="row" data-did="${entry.did}">
+const row = ({ entry, actor, viewer, voted, outOfVotes, note }) => html`<li class="row ${note ? 'has-note' : ''}" data-did="${entry.did}">
   <span class="rank ${entry.rank <= config.listSize ? 'in' : 'out'}">${entry.rank}</span>
   <a class="who" href="/profile/${entry.did}">
     ${avatar(actor)}
@@ -41,11 +41,12 @@ const row = ({ entry, actor, viewer, voted, outOfVotes }) => html`<li class="row
   </a>
   <span class="tally"><b data-count="${entry.did}">${num(entry.votes)}</b><small>${entry.votes === 1 ? 'vote' : 'votes'}</small></span>
   ${voteButton({ did: entry.did, voted, disabled: outOfVotes, viewer })}
-</li>`
+</li>
+${note ? html`<li class="row-note">${note}</li>` : ''}`
 
 /* ----------------------------------------------------------- leaderboard ---- */
 
-export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, hasMore, nextOffset, pageSize }) => {
+export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes, hasMore, nextOffset, pageSize }) => {
   const voted = new Set(ballot.map((b) => b.subject_did))
   const outOfVotes = ballot.length >= config.maxVotes
 
@@ -104,6 +105,7 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, hasMor
               viewer,
               voted: voted.has(entry.did),
               outOfVotes,
+              note: notes?.get(entry.did),
             }),
           )}
         </ol>`}
@@ -490,25 +492,39 @@ export const adminPage = ({ query, error, subject, nominee, standing, received =
     : ''}
 `
 
-export const writeupsPage = ({ doc, entries, actors, stale }) => html`
+export const writeupsPage = ({ doc, entries, actors, stale, published }) => html`
   <section class="hero narrow">
     <h1>The board, annotated</h1>
     <p class="lede">
-      A piece on each of the ${entries.length} accounts inside the cut, written from about a year of their public
-      posts. Only you can see this page.
+      A piece on each of the ${entries.length} accounts inside the cut. Edit anything you like — your
+      wording is kept separately from the generated draft, so regenerating never overwrites it.
     </p>
     <p class="muted small">
       ${doc.window ?? ''} ${stale.length > 0
-        ? html`<b>${stale.length}</b> ${stale.length === 1 ? 'account has' : 'accounts have'} moved in or out of the
-          cut since — ask for a refresh.`
+        ? html`<b>${stale.length}</b> ${stale.length === 1 ? 'account has' : 'accounts have'} moved in or out of
+          the cut since — ask for a refresh.`
         : 'The board has not changed since.'}
     </p>
+  </section>
+
+  <section class="publish ${published ? 'on' : ''}">
+    <div>
+      <b>${published ? 'Live on the leaderboard' : 'Not published'}</b>
+      <p class="muted">
+        ${published
+          ? 'Everyone sees these under the top entries on the front page.'
+          : 'Only you can see these. Publishing puts them under the top entries on the front page.'}
+      </p>
+    </div>
+    <button class="btn ${published ? 'danger' : ''}" id="publish-toggle" data-publish="${published ? 'false' : 'true'}">
+      ${published ? 'Unpublish' : 'Publish to the leaderboard'}
+    </button>
   </section>
 
   <ol class="writeups">
     ${entries.map((entry) => {
       const actor = actors.get(entry.did) ?? { did: entry.did }
-      return html`<li class="writeup">
+      return html`<li class="writeup ${entry.hidden ? 'is-hidden' : ''}" data-did="${entry.did}">
         <div class="writeup-head">
           <span class="rank in">${entry.rank}</span>
           <a class="who" href="/profile/${entry.did}">
@@ -520,8 +536,22 @@ export const writeupsPage = ({ doc, entries, actors, stale }) => html`
           </a>
           <span class="tally"><b>${num(entry.votes)}</b><small>votes</small></span>
         </div>
-        <p class="writeup-note">${entry.note}</p>
-        <blockquote class="writeup-line">${entry.line}</blockquote>
+
+        ${entry.edited ? html`<p class="writeup-flag">edited by you${entry.draftChanged ? ' · the draft has changed since — worth a look' : ''}</p>` : ''}
+
+        <textarea class="writeup-edit" name="note" rows="4" aria-label="Write-up">${entry.note}</textarea>
+        <input class="writeup-edit line" name="line" value="${entry.line}" aria-label="Quoted post" />
+
+        <div class="writeup-actions">
+          <button class="btn btn-small" data-save="${entry.did}">Save</button>
+          <button class="btn btn-small btn-ghost" data-hide="${entry.did}" data-hidden="${entry.hidden ? 'true' : 'false'}">
+            ${entry.hidden ? 'Include' : 'Leave out'}
+          </button>
+          ${entry.edited
+            ? html`<button class="btn btn-small btn-ghost" data-revert="${entry.did}">Revert to draft</button>`
+            : ''}
+          <span class="writeup-status" aria-live="polite"></span>
+        </div>
       </li>`
     })}
   </ol>

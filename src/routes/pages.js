@@ -5,6 +5,7 @@ import * as store from '../db.js'
 import { getPosts, hydrate, resolveHandle, toPostUri } from '../bluesky.js'
 import { syncBallotFromRepo, syncProfileFromRepo } from '../ballot.js'
 import { layout } from '../views/layout.js'
+import { publishedNotes } from '../writeups.js'
 import { faqPage, leaderboardPage, mePage, notFoundPage, profilePage, votePage } from '../views/pages.js'
 
 export const pagesRouter = Router()
@@ -41,6 +42,7 @@ pagesRouter.get('/', async (req, res) => {
         stats,
         viewer,
         ballot,
+        notes: publishedNotes(),
         hasMore: stats.nominees > entries.length,
         nextOffset: entries.length,
         pageSize: PAGE_SIZE,

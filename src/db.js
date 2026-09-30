@@ -64,6 +64,17 @@ db.exec(`
     updated_at  TEXT NOT NULL
   );
 
+  -- The generated text lives in content/writeups.json; anything edited by hand lives here and
+  -- wins, so regenerating the draft never overwrites the owner's wording.
+  CREATE TABLE IF NOT EXISTS writeup (
+    did        TEXT PRIMARY KEY,
+    note       TEXT,
+    line       TEXT,
+    hidden     INTEGER NOT NULL DEFAULT 0,
+    base_hash  TEXT,
+    updated_at TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS kv (
     k TEXT PRIMARY KEY,
     v TEXT NOT NULL
@@ -363,6 +374,48 @@ export const optedOutAmong = (dids) => {
     .all(...dids)
   return new Set(rows.map((row) => row.did))
 }
+
+/* --------------------------------------------------------------- writeups ---- */
+
+const upsertWriteupStmt = stmt(`
+  INSERT INTO writeup (did, note, line, hidden, base_hash, updated_at)
+  VALUES (:did, :note, :line, :hidden, :base_hash, :updated_at)
+  ON CONFLICT (did) DO UPDATE SET
+    note = excluded.note,
+    line = excluded.line,
+    hidden = excluded.hidden,
+    base_hash = excluded.base_hash,
+    updated_at = excluded.updated_at
+`)
+const allWriteupsStmt = stmt('SELECT * FROM writeup')
+
+export const upsertWriteup = ({ did, note, line, hidden = false, baseHash = null }) => {
+  upsertWriteupStmt().run({
+    did,
+    note: note ?? null,
+    line: line ?? null,
+    hidden: hidden ? 1 : 0,
+    base_hash: baseHash,
+    updated_at: new Date().toISOString(),
+  })
+}
+
+export const allWriteups = () =>
+  new Map(
+    allWriteupsStmt()
+      .all()
+      .map((row) => [
+        row.did,
+        {
+          did: row.did,
+          note: row.note,
+          line: row.line,
+          hidden: Boolean(row.hidden),
+          baseHash: row.base_hash,
+          updatedAt: row.updated_at,
+        },
+      ]),
+  )
 
 /* ------------------------------------------------------------------- kv ---- */
 

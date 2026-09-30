@@ -111,7 +111,7 @@ or a `SIGN-IN IS BROKEN` line naming what is wrong.
 | `/profile/:didOrHandle` | one nominee: standing, voters, pinned post, self-controls |
 | `/faq` | the rules |
 | `/admin` | audit view: who voted for an account, and who it voted for. 404s for everyone but `ADMIN_DIDS` |
-| `/admin/writeups` | a short piece on each account inside the cut, from `content/writeups.json`. Same gate |
+| `/admin/writeups` | edit the piece on each account inside the cut, and publish them to the leaderboard. Same gate |
 | `/api/leaderboard` | the standings as JSON |
 | `/lexicons` | the record schemas |
 
@@ -133,6 +133,14 @@ src/
 public/         styles.css · app.js · favicon.svg · logo.png
 scripts/        keygen.js · backfill.js
 ```
+
+### The annotations
+
+`content/writeups.json` is the generated draft. Anything edited at `/admin/writeups` is stored in
+the database instead and wins over the draft, so regenerating the file never overwrites your
+wording — an edited entry whose draft has since changed is flagged for another look, and **Revert
+to draft** drops the edit. Publishing is a switch on the same page: until it is on, only `ADMIN_DIDS`
+can see any of it; once on, each of the top entries on the front page carries its piece.
 
 `node scripts/backfill.js [handle|did ...]` re-reads ballots straight from repos if the firehose
 consumer was ever down.

@@ -445,3 +445,47 @@ footer p { margin: 0.4rem 0; }
   font-style: italic;
 }
 
+
+.publish {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.5rem;
+  background: var(--bg-soft);
+}
+.publish.on { border-color: color-mix(in srgb, var(--good) 45%, var(--line)); }
+.publish p { margin: 0.15rem 0 0; font-size: 0.85rem; }
+.writeup.is-hidden { opacity: 0.5; }
+.writeup-flag { margin: 0 0 0.5rem; font-size: 0.75rem; color: var(--gold); }
+.writeup-edit {
+  display: block;
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+.writeup-edit.line { margin-top: 0.5rem; font-style: italic; color: var(--ink-dim); }
+.writeup-edit:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.writeup-actions { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
+.btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink-dim); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--ink); filter: none; }
+.writeup-status { font-size: 0.8rem; color: var(--good); }
+
+/* the published annotation, under a leaderboard row */
+.row-note {
+  margin: -0.2rem 0 0.4rem;
+  padding: 0 0.9rem 0.7rem 3.35rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-dim);
+}
