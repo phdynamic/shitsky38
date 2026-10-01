@@ -25,19 +25,57 @@ const die = (message) => {
   process.exit(1)
 }
 
-/** Reads a secret without putting it on screen, and without it reaching the shell history. */
-const askSecret = async (prompt) => {
-  const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: true })
-  const onKeypress = () => rl.output.write('\u001b[2K\u001b[200D' + prompt + '*'.repeat(rl.line.length))
-  rl.input.on('keypress', onKeypress)
-  try {
-    return (await rl.question(prompt)).trim()
-  } finally {
-    rl.input.off('keypress', onKeypress)
-    rl.close()
-    process.stdout.write('\n')
-  }
-}
+/**
+ * Reads a secret without putting it on screen, and without it reaching the shell history.
+ *
+ * Raw mode is what actually stops the terminal echoing, so the characters are never drawn and
+ * never have to be erased. readline's own masking depends on its line buffer being current when
+ * the keypress fires, and the failure mode there is the password sitting in the clear on
+ * somebody's screen.
+ */
+const askSecret = (prompt) =>
+  new Promise((resolve) => {
+    const input = process.stdin
+
+    // Piped in rather than typed: there is no terminal echo to suppress.
+    if (!input.isTTY) {
+      const rl = createInterface({ input, terminal: false })
+      rl.once('line', (line) => {
+        rl.close()
+        resolve(line.trim())
+      })
+      return
+    }
+
+    process.stdout.write(prompt)
+    // Raw mode goes on last: resuming the stream is what can put the terminal back into cooked
+    // mode, and cooked mode is the one that echoes.
+    input.resume()
+    input.setEncoding('utf8')
+    input.setRawMode(true)
+
+    let typed = ''
+    const done = (value) => {
+      input.setRawMode(false)
+      input.pause()
+      input.off('data', onData)
+      process.stdout.write('\n')
+      resolve(value)
+    }
+    const onData = (chunk) => {
+      for (const char of chunk) {
+        if (char === '\r' || char === '\n' || char === '\u0004') return done(typed.trim())
+        if (char === '\u0003') {
+          input.setRawMode(false)
+          process.stdout.write('\n')
+          process.exit(130)
+        }
+        if (char === '\u007f' || char === '\b') typed = typed.slice(0, -1)
+        else if (char >= ' ') typed += char
+      }
+    }
+    input.on('data', onData)
+  })
 
 const ask = async (prompt, fallback = '') => {
   const rl = createInterface({ input: process.stdin, output: process.stdout })
