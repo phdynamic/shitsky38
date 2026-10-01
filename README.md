@@ -167,6 +167,14 @@ recent posts means a feed is never empty on its first day. Replies are stored bu
 that policy can change without refetching anything. Posts dated in the future are ignored, and
 withdrawing from the list takes your posts out of the feeds as well as off the board.
 
+Within a day the feeds go round the accounts — everybody's newest post, then everybody's second,
+and so on — rather than straight reverse-chronological. People post in bursts, and in plain time
+order one neighbouring pair in eight was the same person, in runs of up to ten; interleaving takes
+that to one in two hundred. The newest post is still at the top and the feed still walks backwards
+a day at a time. Ordering within a day rather than across the whole feed is what keeps it stable:
+a new post renumbers only its own author's posts for today, so reading down through yesterday is
+not reshuffled by what gets posted meanwhile.
+
 No account may supply more than `MAX_POSTS_PER_DAY` posts to a feed on any given day — its newest
 that day, the rest left out. A self-described bot posting a steady 34 times a day was otherwise one
 post in seven of Deep Cuts, while ordinary members post a median of 4 a day and 13 at the 90th

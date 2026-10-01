@@ -511,11 +511,12 @@ export const allFeedMemberDids = () =>
 // not dated in the future — a createdAt is whatever the author's client wrote, so ignoring those
 // stops anyone parking themselves at the top forever.
 //
-// per_day numbers each account's posts within its own day, newest first, which is what lets the
-// cap below keep one very prolific account from crowding out everybody else.
+// per_day numbers each account's posts within its own day, newest first. It does two jobs: the
+// cap keeps one very prolific account from crowding out everybody else, and the ordering below
+// uses it to take a turn from each account before anybody's second post.
 const SERVABLE = `
   servable AS (
-    SELECT p.uri, p.created_at,
+    SELECT p.uri, p.created_at, substr(p.created_at, 1, 10) AS day,
            ROW_NUMBER() OVER (
              PARTITION BY p.did, substr(p.created_at, 1, 10)
              ORDER BY p.created_at DESC, p.uri DESC
@@ -529,20 +530,37 @@ const SERVABLE = `
   )
 `
 
+/**
+ * Newest day first, and within a day one post from each account before anybody's second.
+ *
+ * Straight reverse-chronological put the same person back to back for one neighbouring pair in
+ * eight, in runs of up to ten, because people post in bursts. Going round the accounts instead
+ * breaks those bursts apart without making the feed arbitrary: the top is still the most recent
+ * post, and the feed still walks backwards a day at a time.
+ *
+ * Ordering within a day rather than across the whole feed also keeps it stable. A new post only
+ * renumbers its author's posts for today, so somebody reading down through yesterday is not
+ * shuffled under by what gets posted while they read.
+ */
 const skeletonStmt = stmt(`
   WITH ${SERVABLE}
-  SELECT uri, created_at FROM servable
+  SELECT uri, created_at, per_day FROM servable
   WHERE per_day <= :cap
     AND (
       :cursor_time IS NULL
-      OR created_at < :cursor_time
-      OR (created_at = :cursor_time AND uri < :cursor_uri)
+      OR day < :cursor_day
+      OR (day = :cursor_day AND per_day > :cursor_rank)
+      OR (day = :cursor_day AND per_day = :cursor_rank AND created_at < :cursor_time)
+      OR (day = :cursor_day AND per_day = :cursor_rank AND created_at = :cursor_time AND uri < :cursor_uri)
     )
-  ORDER BY created_at DESC, uri DESC
+  ORDER BY day DESC, per_day ASC, created_at DESC, uri DESC
   LIMIT :limit
 `)
 
-export const feedSkeleton = (feed, { limit = 50, cursorTime = null, cursorUri = null } = {}) =>
+export const feedSkeleton = (
+  feed,
+  { limit = 50, cursorTime = null, cursorUri = null, cursorRank = null } = {},
+) =>
   skeletonStmt().all({
     feed,
     now: new Date().toISOString(),
@@ -550,6 +568,8 @@ export const feedSkeleton = (feed, { limit = 50, cursorTime = null, cursorUri = 
     limit,
     cursor_time: cursorTime,
     cursor_uri: cursorUri,
+    cursor_rank: cursorRank,
+    cursor_day: cursorTime ? String(cursorTime).slice(0, 10) : null,
   })
 
 // Counts what the feed would actually serve, so the admin page cannot report posts that no

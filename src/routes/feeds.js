@@ -36,17 +36,20 @@ feedsRouter.get('/xrpc/app.bsky.feed.describeFeedGenerator', (_req, res) => {
   })
 })
 
-// An ISO timestamp never contains a pipe, so this round-trips without escaping. Pairing the
-// timestamp with the URI makes paging stable when several posts share a timestamp.
-const encodeCursor = (row) => `${row.created_at}|${row.uri}`
+// The cursor has to carry the whole sort key, which is the account's turn within its day as
+// well as the timestamp. An ISO timestamp never contains a pipe, so this round-trips without
+// escaping, and the URI on the end keeps paging exact when two posts share a timestamp.
+const encodeCursor = (row) => `${row.per_day}|${row.created_at}|${row.uri}`
 const decodeCursor = (value) => {
-  if (!value) return { cursorTime: null, cursorUri: null }
-  const at = String(value).indexOf('|')
-  if (at === -1) return null
-  const cursorTime = String(value).slice(0, at)
-  const cursorUri = String(value).slice(at + 1)
+  if (!value) return { cursorRank: null, cursorTime: null, cursorUri: null }
+  const parts = String(value).split('|')
+  if (parts.length < 3) return null
+  const cursorRank = Number(parts[0])
+  const cursorTime = parts[1]
+  const cursorUri = parts.slice(2).join('|')
+  if (!Number.isInteger(cursorRank) || cursorRank < 1) return null
   if (!cursorTime || !cursorUri || Number.isNaN(Date.parse(cursorTime))) return null
-  return { cursorTime, cursorUri }
+  return { cursorRank, cursorTime, cursorUri }
 }
 
 feedsRouter.get('/xrpc/app.bsky.feed.getFeedSkeleton', (req, res) => {

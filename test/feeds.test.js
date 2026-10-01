@@ -83,6 +83,7 @@ const second = store.feedSkeleton('shitsky38', {
   limit: 1,
   cursorTime: first[0].created_at,
   cursorUri: first[0].uri,
+  cursorRank: first[0].per_day,
 })
 assert.deepEqual([first[0].uri, second[0].uri].map((u) => u.split('/').pop()), ['a2', 'b1'])
 console.log('✓ the cursor resumes exactly where the previous page stopped')
@@ -134,17 +135,49 @@ console.log('✓ the allowance is per day, so the next day starts fresh')
 // Paging has to agree with a single page, or the cap would drop or repeat posts at a boundary.
 const whole = store.feedSkeleton('shitsky38', { limit: 100 }).map((r) => r.uri)
 const walked = []
-let cur = { cursorTime: null, cursorUri: null }
-for (let page = 0; page < 20; page++) {
+let cur = { cursorTime: null, cursorUri: null, cursorRank: null }
+for (let page = 0; page < 40; page++) {
   const rows = store.feedSkeleton('shitsky38', { limit: 2, ...cur })
   if (rows.length === 0) break
   walked.push(...rows.map((r) => r.uri))
-  cur = { cursorTime: rows.at(-1).created_at, cursorUri: rows.at(-1).uri }
+  const last = rows.at(-1)
+  cur = { cursorTime: last.created_at, cursorUri: last.uri, cursorRank: last.per_day }
 }
 assert.deepEqual(walked, whole)
 console.log('✓ paging through the cap matches one page exactly — nothing repeated or skipped')
 
-assert.equal(store.feedPostCount('shitsky38'), whole.length)
+/* ------------------------------------------------- spreading the authors ---- */
+
+// Two accounts posting in bursts on the same day must come out interleaved, not in two blocks.
+for (let i = 0; i < 3; i++) {
+  store.upsertFeedPost({
+    uri: `at://did:plc:B/app.bsky.feed.post/burst${i}`,
+    did: 'did:plc:B',
+    createdAt: `2026-08-22T0${i}:00:00.000Z`,
+  })
+  store.upsertFeedPost({
+    uri: `at://did:plc:C/app.bsky.feed.post/burst${i}`,
+    did: 'did:plc:C',
+    createdAt: `2026-08-22T0${i}:30:00.000Z`,
+  })
+}
+const day22 = store
+  .feedSkeleton('shitsky38', { limit: 100 })
+  .filter((r) => r.created_at.startsWith('2026-08-22'))
+  .map((r) => r.uri.split('/')[2].slice(-1))
+assert.equal(day22.length, 6)
+assert.ok(!day22.some((who, i) => i > 0 && who === day22[i - 1]), `clustered: ${day22.join('')}`)
+console.log(`✓ two accounts posting in bursts come out interleaved — ${day22.join(' ')}`)
+
+// And each account's own posts stay newest-first within the day.
+const bOrder = store
+  .feedSkeleton('shitsky38', { limit: 100 })
+  .filter((r) => r.uri.includes('did:plc:B') && r.created_at.startsWith('2026-08-22'))
+  .map((r) => r.uri.split('/').pop())
+assert.deepEqual(bOrder, ['burst2', 'burst1', 'burst0'])
+console.log('✓ within an account, its own posts are still newest first')
+
+assert.equal(store.feedPostCount('shitsky38'), store.feedSkeleton('shitsky38', { limit: 500 }).length)
 console.log('✓ the count the owner sees agrees with what the feed serves')
 
 store.upsertNomineeProfile('did:plc:A', { optOut: true })
