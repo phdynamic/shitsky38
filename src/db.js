@@ -453,6 +453,10 @@ export const allWriteups = () =>
 const setKvStmt = stmt('INSERT OR REPLACE INTO kv (k, v) VALUES (?, ?)')
 const getKvStmt = stmt('SELECT v FROM kv WHERE k = ?')
 
+/** Drop kv rows by prefix — used to retire a superseded backfill marker. */
+export const clearKvPrefix = (prefix) =>
+  db.prepare('DELETE FROM kv WHERE k LIKE ?').run(`${prefix}%`).changes
+
 export const setKv = (key, value) => setKvStmt().run(key, String(value))
 export const getKv = (key) => getKvStmt().get(key)?.v ?? null
 

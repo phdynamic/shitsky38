@@ -201,9 +201,51 @@ export const getPosts = async (uris) => {
 }
 
 /**
- * Somebody's own posts, newest first, for seeding a feed that the firehose can only fill going
- * forward. `posts_no_replies` still includes reposts, which are somebody else's writing, so the
- * caller drops anything whose author is not the account we asked about.
+ * Somebody's own posts, newest first, read straight out of their repo.
+ *
+ * Not getAuthorFeed: that returns a *view*, reposts and all, and for these accounts reposts are
+ * most of it — one page of 100 came back around 70 reposts on average, so asking for 100 and
+ * discarding the rest left the rank-2 account with two posts in the feed. A repo holds only what
+ * its owner wrote; a repost is a record in a different collection, so it cannot be in the way.
+ *
+ * Pages back until it reaches `since` or runs out of patience, whichever comes first.
+ */
+export const authorPosts = async (did, { since, maxPages = 12, signal } = {}) => {
+  const pds = await resolvePds(did)
+  const posts = []
+  let cursor
+  for (let page = 0; page < maxPages; page++) {
+    const data = await xrpc(
+      pds,
+      'com.atproto.repo.listRecords',
+      { repo: did, collection: 'app.bsky.feed.post', limit: 100, cursor, reverse: false },
+      { signal, timeout: 10_000 },
+    )
+    const records = data.records ?? []
+    let reachedBack = false
+    for (const record of records) {
+      const createdAt = record.value?.createdAt
+      if (!record.uri || !createdAt) continue
+      if (since && createdAt < since) {
+        reachedBack = true
+        continue
+      }
+      posts.push({
+        uri: record.uri,
+        cid: record.cid ?? null,
+        createdAt,
+        isReply: Boolean(record.value?.reply),
+      })
+    }
+    cursor = data.cursor
+    if (!cursor || records.length === 0 || reachedBack) break
+  }
+  return posts
+}
+
+/**
+ * The AppView's view of somebody's posts. Only a fallback for when their PDS cannot be reached:
+ * it mixes in reposts, so what it yields is a fraction of what the repo holds.
  */
 export const authorFeed = async (did, { limit = 100, cursor = null, signal } = {}) => {
   const data = await xrpc(

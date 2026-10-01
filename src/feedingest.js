@@ -1,11 +1,13 @@
 import { config } from './config.js'
 import * as store from './db.js'
-import { authorFeed, hydrate } from './bluesky.js'
+import { authorFeed, authorPosts, hydrate } from './bluesky.js'
 import { feedKeys, feedUri, refreshMembership } from './feeds.js'
 import { LIVE_KEY } from './feedmeta.js'
 
 const CURSOR_KEY = 'feed_jetstream_cursor'
-const BACKFILLED_KEY = (did) => `feed_backfilled:${did}`
+// v2: the first version seeded from getAuthorFeed and collected a fraction of what it should.
+// Bumping the marker re-seeds everybody; the old rows are swept up at boot.
+const BACKFILLED_KEY = (did) => `feed_backfilled2:${did}`
 const CURSOR_SAVE_MS = 5_000
 const CURSOR_REWIND_US = 5_000_000
 const KEEP_DAYS = 45
@@ -33,19 +35,33 @@ const record = (did, post) => {
 
 /**
  * A fresh firehose subscription only ever sees the future, so a new feed would open empty and
- * stay thin for days. One page of each member's own posts fixes that. Done once per account —
- * after that the firehose keeps up on its own.
+ * stay thin for days. Reading each member's repo back to the prune horizon fixes that. Done once
+ * per account — after that the firehose keeps up on its own.
+ *
+ * Only top-level posts are stored here, unlike the firehose, which keeps replies too. Serving
+ * replies is off, and these accounts write far more replies than posts — one of them had 900
+ * posts in 45 days, 29 of them top-level. Seeding all of that would be rows nobody can read.
+ * If replies are ever served, clearing the markers re-seeds from the repos.
  */
 const backfill = async (dids) => {
   const cutoff = new Date(Date.now() - KEEP_DAYS * 86_400_000).toISOString()
   let filled = 0
+  let stored = 0
   for (const did of dids) {
     if (store.getKv(BACKFILLED_KEY(did))) continue
     try {
-      const { posts } = await authorFeed(did, { limit: 100 })
+      let posts
+      try {
+        posts = await authorPosts(did, { since: cutoff })
+      } catch (err) {
+        // Their PDS is unreachable; the AppView's view is thinner but better than nothing.
+        console.warn(`[feeds] reading ${did}'s repo failed (${err.message}) — falling back`)
+        posts = (await authorFeed(did, { limit: 100 })).posts.filter((p) => p.createdAt >= cutoff)
+      }
       for (const post of posts) {
-        if (post.createdAt < cutoff) continue
+        if (post.isReply) continue
         record(did, post)
+        stored++
       }
       store.setKv(BACKFILLED_KEY(did), new Date().toISOString())
       filled++
@@ -54,7 +70,9 @@ const backfill = async (dids) => {
       console.warn(`[feeds] backfill failed for ${did}: ${err.message}`)
     }
   }
-  if (filled) console.log(`[feeds] backfilled ${filled} account${filled === 1 ? '' : 's'}`)
+  if (filled) {
+    console.log(`[feeds] backfilled ${filled} account${filled === 1 ? '' : 's'}, ${stored} posts`)
+  }
 }
 
 export const startFeedIngest = () => {
@@ -179,9 +197,16 @@ const checkPublished = async () => {
   }
 }
 
+  // Seeding every member's repo takes minutes on the first run, which is longer than the gap
+  // between sweeps. Without this, a second sweep would start backfilling the same accounts the
+  // first one had not finished marking.
+  let sweeping = false
+
   // Follower counts decide the Deep Cuts roster, so they have to be reasonably current before
   // membership is recomputed. hydrate() has its own six-hour TTL, so most sweeps fetch nothing.
   const sweep = async () => {
+    if (sweeping) return
+    sweeping = true
     try {
       const nominees = store.nomineeDids()
       if (nominees.length) await hydrate(nominees)
@@ -204,12 +229,17 @@ const checkPublished = async () => {
       await checkPublished()
     } catch (err) {
       console.warn('[feeds] sweep failed:', err.message)
+    } finally {
+      sweeping = false
     }
   }
 
   if (typeof WebSocket === 'undefined') {
     console.warn('[feeds] no global WebSocket in this Node build; posts will only arrive by backfill')
   }
+
+  const retired = store.clearKvPrefix('feed_backfilled:')
+  if (retired) console.log(`[feeds] retired ${retired} first-generation backfill markers`)
 
   sweep()
   const membership = setInterval(sweep, MEMBERSHIP_MS)
