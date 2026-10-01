@@ -84,6 +84,10 @@ export const config = {
   feedsEnabled: env('FEEDS_ENABLED', '1') !== '0',
   feedServiceDid: env('FEED_SERVICE_DID', `did:web:${publicUrl.hostname}`),
   feedOwnerDid: env('FEED_OWNER_DID', ''),
+  // No single account may supply more than this many posts per day to a feed. A prolific bot
+  // was otherwise one post in seven of Deep Cuts; normal accounts post a median of 4 a day and
+  // reach 13 at the 90th percentile, so this clips only unusually busy days.
+  maxPostsPerDay: Math.max(1, num('MAX_POSTS_PER_DAY', 10)),
   deepCutsMaxFollowers: num('DEEP_CUTS_MAX_FOLLOWERS', 5000),
   deepCutsMinVotes: num('DEEP_CUTS_MIN_VOTES', 2),
   privateKeys: ['PRIVATE_KEY_1', 'PRIVATE_KEY_2', 'PRIVATE_KEY_3']

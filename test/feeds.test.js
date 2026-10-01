@@ -87,8 +87,68 @@ const second = store.feedSkeleton('shitsky38', {
 assert.deepEqual([first[0].uri, second[0].uri].map((u) => u.split('/').pop()), ['a2', 'b1'])
 console.log('✓ the cursor resumes exactly where the previous page stopped')
 
+/* --------------------------------------------------- the per-account cap ---- */
+
+// A flooder in the Shitsky38 roster: 12 posts in one day, against B's single post the same day.
+const FLOOD_DAY = '2026-08-20'
+for (let i = 0; i < 12; i++) {
+  store.upsertFeedPost({
+    uri: `at://did:plc:C/app.bsky.feed.post/flood${String(i).padStart(2, '0')}`,
+    did: 'did:plc:C',
+    createdAt: `${FLOOD_DAY}T${String(i).padStart(2, '0')}:00:00.000Z`,
+  })
+}
+store.upsertFeedPost({
+  uri: 'at://did:plc:B/app.bsky.feed.post/quiet',
+  did: 'did:plc:B',
+  createdAt: `${FLOOD_DAY}T05:30:00.000Z`,
+})
+
+const onDay = (key) =>
+  store.feedSkeleton(key, { limit: 100 }).filter((r) => r.created_at.startsWith(FLOOD_DAY))
+const flooded = onDay('shitsky38')
+assert.equal(config.maxPostsPerDay, 3, 'run this suite with MAX_POSTS_PER_DAY=3')
+assert.equal(flooded.filter((r) => r.uri.includes('did:plc:C')).length, 3)
+console.log(`✓ an account posting 12 times in a day contributes ${config.maxPostsPerDay}, not 12`)
+
+assert.equal(flooded.filter((r) => r.uri.includes('did:plc:B')).length, 1)
+console.log('✓ the quiet account on the same day is untouched')
+
+// The cap keeps the newest of that day, not an arbitrary three.
+const keptC = flooded.filter((r) => r.uri.includes('did:plc:C')).map((r) => r.uri.split('/').pop())
+assert.deepEqual(keptC, ['flood11', 'flood10', 'flood09'])
+console.log('✓ it keeps that day\'s newest, and drops the rest')
+
+// A second day is its own allowance.
+store.upsertFeedPost({
+  uri: 'at://did:plc:C/app.bsky.feed.post/nextday',
+  did: 'did:plc:C',
+  createdAt: '2026-08-21T04:00:00.000Z',
+})
+assert.equal(
+  store.feedSkeleton('shitsky38', { limit: 100 }).filter((r) => r.uri.endsWith('nextday')).length,
+  1,
+)
+console.log('✓ the allowance is per day, so the next day starts fresh')
+
+// Paging has to agree with a single page, or the cap would drop or repeat posts at a boundary.
+const whole = store.feedSkeleton('shitsky38', { limit: 100 }).map((r) => r.uri)
+const walked = []
+let cur = { cursorTime: null, cursorUri: null }
+for (let page = 0; page < 20; page++) {
+  const rows = store.feedSkeleton('shitsky38', { limit: 2, ...cur })
+  if (rows.length === 0) break
+  walked.push(...rows.map((r) => r.uri))
+  cur = { cursorTime: rows.at(-1).created_at, cursorUri: rows.at(-1).uri }
+}
+assert.deepEqual(walked, whole)
+console.log('✓ paging through the cap matches one page exactly — nothing repeated or skipped')
+
+assert.equal(store.feedPostCount('shitsky38'), whole.length)
+console.log('✓ the count the owner sees agrees with what the feed serves')
+
 store.upsertNomineeProfile('did:plc:A', { optOut: true })
-assert.deepEqual(uris('shitsky38'), ['b1'])
+assert.ok(!uris('shitsky38').some((u) => u.startsWith('a')))
 console.log('✓ withdrawing takes your posts out of the feed, not just off the board')
 store.upsertNomineeProfile('did:plc:A', { optOut: false })
 
@@ -111,10 +171,12 @@ store.upsertFeedPost({
 const dropped = store.pruneFeedPosts(45)
 assert.ok(dropped >= 2, `expected the ancient post and the stray to go, dropped ${dropped}`)
 assert.ok(!uris('shitsky38').includes('ancient'))
-assert.equal(store.feedPostCount('shitsky38'), 3)
 console.log('✓ pruning drops what is too old and what belongs to nobody')
-assert.equal(store.feedPostCount('deep-cuts'), 1)
-console.log('✓ the count the owner sees is what the feed would actually serve')
+
+for (const key of ['shitsky38', 'deep-cuts']) {
+  assert.equal(store.feedPostCount(key), store.feedSkeleton(key, { limit: 500 }).length)
+}
+console.log('✓ the count the owner sees is exactly what the feed serves, cap and all')
 
 assert.deepEqual(Object.keys(FEEDS), ['shitsky38', 'deep-cuts'])
 console.log('\nboth feeds behave')

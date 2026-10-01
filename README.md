@@ -167,6 +167,12 @@ recent posts means a feed is never empty on its first day. Replies are stored bu
 that policy can change without refetching anything. Posts dated in the future are ignored, and
 withdrawing from the list takes your posts out of the feeds as well as off the board.
 
+No account may supply more than `MAX_POSTS_PER_DAY` posts to a feed on any given day — its newest
+that day, the rest left out. A self-described bot posting a steady 34 times a day was otherwise one
+post in seven of Deep Cuts, while ordinary members post a median of 4 a day and 13 at the 90th
+percentile, so the default of 10 clips only unusually busy days. The cap applies when the feed is
+read, not when posts are stored, so changing it takes effect at once and nothing has to be refetched.
+
 Rosters are recomputed every ten minutes — **until voting closes, after which they freeze.** The
 top 38 would settle anyway, because late votes never count; Deep Cuts would not, since follower
 counts keep moving, and nobody should drop off a list they qualified for.

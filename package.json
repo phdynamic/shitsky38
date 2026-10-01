@@ -12,7 +12,7 @@
     "dev": "node --watch src/index.js",
     "keygen": "node scripts/keygen.js",
     "backfill": "node scripts/backfill.js",
-    "test": "DB_PATH=test/tmp-tally.sqlite node test/tally.test.js && LIST_SIZE=4 DB_PATH=test/tmp-rank.sqlite node test/rank.test.js && DB_PATH=test/tmp-posturi.sqlite node test/posturi.test.js && LIST_SIZE=3 DB_PATH=test/tmp-feeds.sqlite node test/feeds.test.js && LIST_SIZE=3 VOTING_CLOSES_AT=2026-09-02 DB_PATH=test/tmp-freeze.sqlite node test/feedfreeze.test.js",
+    "test": "DB_PATH=test/tmp-tally.sqlite node test/tally.test.js && LIST_SIZE=4 DB_PATH=test/tmp-rank.sqlite node test/rank.test.js && DB_PATH=test/tmp-posturi.sqlite node test/posturi.test.js && LIST_SIZE=3 MAX_POSTS_PER_DAY=3 DB_PATH=test/tmp-feeds.sqlite node test/feeds.test.js && LIST_SIZE=3 VOTING_CLOSES_AT=2026-09-02 DB_PATH=test/tmp-freeze.sqlite node test/feedfreeze.test.js",
     "pretest": "rm -f test/tmp-*.sqlite*",
     "posttest": "rm -f test/tmp-*.sqlite*",
     "publish-feeds": "node scripts/publish-feeds.mjs"

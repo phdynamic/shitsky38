@@ -507,22 +507,38 @@ export const feedMembers = (feed) =>
 export const allFeedMemberDids = () =>
   db.prepare('SELECT DISTINCT did FROM feed_member ORDER BY did').all().map((r) => r.did)
 
-// A post's createdAt is whatever its author's client wrote, so it can be in the future. Ignoring
-// those keeps somebody from parking themselves at the top of the feed forever.
+// Everything a feed could serve, before paging: in the roster, not withdrawn, not a reply, and
+// not dated in the future — a createdAt is whatever the author's client wrote, so ignoring those
+// stops anyone parking themselves at the top forever.
+//
+// per_day numbers each account's posts within its own day, newest first, which is what lets the
+// cap below keep one very prolific account from crowding out everybody else.
+const SERVABLE = `
+  servable AS (
+    SELECT p.uri, p.created_at,
+           ROW_NUMBER() OVER (
+             PARTITION BY p.did, substr(p.created_at, 1, 10)
+             ORDER BY p.created_at DESC, p.uri DESC
+           ) AS per_day
+    FROM feed_post p
+    JOIN feed_member m ON m.did = p.did AND m.feed = :feed
+    LEFT JOIN nominee_profile np ON np.did = p.did
+    WHERE COALESCE(np.opted_out, 0) = 0
+      AND p.is_reply = 0
+      AND p.created_at <= :now
+  )
+`
+
 const skeletonStmt = stmt(`
-  SELECT p.uri, p.created_at
-  FROM feed_post p
-  JOIN feed_member m ON m.did = p.did AND m.feed = :feed
-  LEFT JOIN nominee_profile np ON np.did = p.did
-  WHERE COALESCE(np.opted_out, 0) = 0
-    AND p.is_reply = 0
-    AND p.created_at <= :now
+  WITH ${SERVABLE}
+  SELECT uri, created_at FROM servable
+  WHERE per_day <= :cap
     AND (
       :cursor_time IS NULL
-      OR p.created_at < :cursor_time
-      OR (p.created_at = :cursor_time AND p.uri < :cursor_uri)
+      OR created_at < :cursor_time
+      OR (created_at = :cursor_time AND uri < :cursor_uri)
     )
-  ORDER BY p.created_at DESC, p.uri DESC
+  ORDER BY created_at DESC, uri DESC
   LIMIT :limit
 `)
 
@@ -530,22 +546,21 @@ export const feedSkeleton = (feed, { limit = 50, cursorTime = null, cursorUri = 
   skeletonStmt().all({
     feed,
     now: new Date().toISOString(),
+    cap: config.maxPostsPerDay,
     limit,
     cursor_time: cursorTime,
     cursor_uri: cursorUri,
   })
 
 // Counts what the feed would actually serve, so the admin page cannot report posts that no
-// reader can reach: same filters as the skeleton.
+// reader can reach: the same filters as the skeleton, the per-account daily cap included.
+const feedCountStmt = stmt(`
+  WITH ${SERVABLE}
+  SELECT COUNT(*) AS c FROM servable WHERE per_day <= :cap
+`)
+
 export const feedPostCount = (feed) =>
-  db
-    .prepare(
-      `SELECT COUNT(*) AS c FROM feed_post p
-       JOIN feed_member m ON m.did = p.did AND m.feed = ?
-       LEFT JOIN nominee_profile np ON np.did = p.did
-       WHERE p.is_reply = 0 AND COALESCE(np.opted_out, 0) = 0 AND p.created_at <= ?`,
-    )
-    .get(feed, new Date().toISOString()).c
+  feedCountStmt().get({ feed, now: new Date().toISOString(), cap: config.maxPostsPerDay }).c
 
 /** Drop posts nobody can reach any more: not in a feed, or older than the window we serve. */
 export const pruneFeedPosts = (keepDays = 45) => {
