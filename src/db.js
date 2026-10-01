@@ -579,6 +579,24 @@ export const deepCutsPool = ({ minVotes, maxFollowers }) =>
     max_followers: maxFollowers,
   })
 
+/**
+ * Nominees we have no follower count for. After the column was added every cached profile had
+ * one, and the profile cache's own freshness window would have kept them that way for hours —
+ * leaving Deep Cuts correctly, but uselessly, empty. These get refetched regardless of the TTL.
+ */
+export const nomineesMissingFollowers = (limit = 100) =>
+  db
+    .prepare(
+      `${ELIGIBLE}
+       SELECT t.did FROM tally t
+       LEFT JOIN actor a ON a.did = t.did
+       WHERE a.followers IS NULL
+       ORDER BY t.votes DESC
+       LIMIT :limit`,
+    )
+    .all({ ...bounds(), limit })
+    .map((r) => r.did)
+
 /** Everyone with at least one counted vote — the accounts worth keeping follower counts for. */
 export const nomineeDids = () =>
   db

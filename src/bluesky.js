@@ -134,11 +134,12 @@ export const handleCandidates = (query) => {
 }
 
 /** Profiles for a set of DIDs, served from cache and refreshed in the background of the request. */
-export const hydrate = async (dids) => {
+export const hydrate = async (dids, { force = false } = {}) => {
   const unique = [...new Set(dids.filter(Boolean))]
   const cached = getActors(unique)
   const now = Date.now()
   const stale = unique.filter((did) => {
+    if (force) return true
     const hit = cached.get(did)
     return !hit || now - new Date(hit.fetchedAt).getTime() > PROFILE_TTL_MS
   })

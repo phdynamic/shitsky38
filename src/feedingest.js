@@ -185,6 +185,13 @@ const checkPublished = async () => {
     try {
       const nominees = store.nomineeDids()
       if (nominees.length) await hydrate(nominees)
+      // Anyone still without a count — new nominees, and everybody at all when this first
+      // shipped — is fetched whatever the cache says, a batch at a time until none are left.
+      const missing = store.nomineesMissingFollowers(100)
+      if (missing.length) {
+        await hydrate(missing, { force: true })
+        console.log(`[feeds] filled in follower counts for ${missing.length} nominees`)
+      }
       const changes = refreshMembership()
       const summary = feedKeys
         .map((key) => `${key}=${changes[key].frozen ? `${changes[key].count} (frozen)` : changes[key].count}`)

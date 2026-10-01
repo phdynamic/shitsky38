@@ -44,6 +44,13 @@ console.log('✓ a lightly-followed account inside the cut is not also a deep cu
 assert.ok(!store.feedMembers('deep-cuts').includes('did:plc:G'))
 console.log('✓ an account with no known follower count is left out rather than guessed at')
 
+// G has votes but no follower count, so it is exactly what the fill-in pass is for. E has one
+// already and must not be refetched.
+const missing = store.nomineesMissingFollowers(100)
+assert.ok(missing.includes('did:plc:G'), 'G has no follower count and should be queued')
+assert.ok(!missing.includes('did:plc:E'), 'E already has one')
+console.log('✓ nominees with no follower count are queued for a fetch that ignores the cache')
+
 /* ------------------------------------------------------------- skeleton ---- */
 
 const post = (did, rkey, { minute = 0, isReply = false, future = false } = {}) => {
