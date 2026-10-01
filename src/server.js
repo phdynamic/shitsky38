@@ -10,6 +10,8 @@ import { adminRouter } from './routes/admin.js'
 import { layout } from './views/layout.js'
 import { errorPage, notFoundPage } from './views/pages.js'
 import { startJetstream } from './jetstream.js'
+import { startFeedIngest } from './feedingest.js'
+import { feedsRouter } from './routes/feeds.js'
 import { oauthClient } from './oauth.js'
 import { refreshCreator } from './creator.js'
 import { checkClientMetadata } from './selfcheck.js'
@@ -28,6 +30,7 @@ app.get('/healthz', (_req, res) => {
   res.json({ ok: true, voting: votingState(), uptime: Math.round(process.uptime()) })
 })
 
+app.use(feedsRouter)
 app.use('/api', apiRouter)
 app.use(authRouter)
 app.use(adminRouter)
@@ -52,6 +55,7 @@ const server = app.listen(config.port, () => {
 })
 
 const stopJetstream = startJetstream()
+const stopFeedIngest = startFeedIngest()
 
 // Give the platform a moment to route traffic to us before we ask the internet for our own
 // metadata document.
@@ -67,6 +71,7 @@ sweeper.unref()
 const shutdown = () => {
   console.log('\nshutting down')
   stopJetstream()
+  stopFeedIngest()
   server.close(() => process.exit(0))
   setTimeout(() => process.exit(0), 5_000).unref()
 }

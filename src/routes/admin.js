@@ -6,6 +6,19 @@ import { layout } from '../views/layout.js'
 import { adminPage, notFoundPage, writeupsPage } from '../views/pages.js'
 import { isPublished, loadWriteups, setPublished } from '../writeups.js'
 import { viewerOf } from './pages.js'
+import { feedStatus } from './feeds.js'
+import { liveFeeds, webUrl } from '../feeds.js'
+import { creator } from '../creator.js'
+
+/** Feed rows for the audit page: roster size, what is servable, and whether it is published. */
+const feedRows = () => {
+  const live = new Set(liveFeeds().map((feed) => feed.key))
+  return feedStatus().map((feed) => ({
+    ...feed,
+    published: live.has(feed.key),
+    url: webUrl(feed.key, creator().handle),
+  }))
+}
 
 export const adminRouter = Router()
 
@@ -31,7 +44,7 @@ adminRouter.get('/admin', async (req, res) => {
   if (!query) {
     return res
       .type('html')
-      .send(layout({ title: 'Audit', viewer, path: '/admin', body: adminPage({ query: '' }) }).toString())
+      .send(layout({ title: 'Audit', viewer, path: '/admin', body: adminPage({ query: '', feeds: feedRows() }) }).toString())
   }
 
   let did = query.replace(/^@/, '')

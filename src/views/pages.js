@@ -46,7 +46,7 @@ ${note ? html`<li class="row-note">${note}</li>` : ''}`
 
 /* ----------------------------------------------------------- leaderboard ---- */
 
-export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes, hasMore, nextOffset, pageSize }) => {
+export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes, hasMore, nextOffset, pageSize, feeds = [] }) => {
   const voted = new Set(ballot.map((b) => b.subject_did))
   const outOfVotes = ballot.length >= config.maxVotes
 
@@ -72,6 +72,25 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes,
             <a class="btn" href="/login">Sign in with Bluesky</a> to cast your ${config.maxVotes} votes
           </p>`}
     </section>
+
+    ${feeds.length
+      ? html`<section class="feeds">
+          <h2>Read them, don't just rank them</h2>
+          <p class="muted">
+            Two feeds you can follow in the Bluesky app. They keep themselves up to date as the
+            vote moves.
+          </p>
+          <div class="feed-cards">
+            ${feeds.map(
+              (feed) => html`<a class="feed-card" href="${feed.url}" rel="noopener">
+                <b>${feed.displayName}</b>
+                <span>${feed.blurb ?? feed.description}</span>
+                <em>Open in Bluesky →</em>
+              </a>`,
+            )}
+          </div>
+        </section>`
+      : ''}
 
     <section class="find">
       <h2>Vote for anybody on Bluesky</h2>
@@ -435,7 +454,7 @@ const auditList = (rows, actors, emptyText) =>
         })}
       </ul>`
 
-export const adminPage = ({ query, error, subject, nominee, standing, received = [], cast = [], actors }) => html`
+export const adminPage = ({ query, error, subject, nominee, standing, received = [], cast = [], actors, feeds = [] }) => html`
   <section class="hero narrow">
     <h1>Audit</h1>
     <p class="lede">
@@ -445,6 +464,34 @@ export const adminPage = ({ query, error, subject, nominee, standing, received =
   </section>
 
   <p class="muted"><a href="/admin/writeups">The board, annotated →</a></p>
+
+  ${feeds.length
+    ? html`<section class="admin-feeds">
+        <h2>Feeds</h2>
+        <table class="feed-table">
+          <tbody>
+            ${feeds.map(
+              (feed) => html`<tr>
+                <td><b>${feed.displayName}</b><br /><code>${feed.uri}</code></td>
+                <td>${feed.members} account${feed.members === 1 ? '' : 's'}</td>
+                <td>${feed.posts} post${feed.posts === 1 ? '' : 's'}</td>
+                <td>
+                  ${feed.published
+                    ? html`<a href="${feed.url}" rel="noopener">live →</a>`
+                    : html`<span class="muted">not published yet</span>`}
+                </td>
+              </tr>`,
+            )}
+          </tbody>
+        </table>
+        ${feeds.every((feed) => feed.published)
+          ? ''
+          : html`<p class="muted">
+              Publish them with <code>npm run publish-feeds</code>. Until then nothing about them
+              shows on the front page.
+            </p>`}
+      </section>`
+    : ''}
 
   <form class="search" action="/admin" method="get" role="search">
     <input

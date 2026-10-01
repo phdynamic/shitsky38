@@ -63,6 +63,9 @@ const normalize = (profile) => ({
   displayName: profile.displayName ?? null,
   avatar: profile.avatar ?? null,
   description: profile.description ?? null,
+  // Decides who belongs in the Deep Cuts feed. Absent from some profile views, so it stays
+  // undefined rather than becoming a zero that would read as "nobody follows them".
+  followers: Number.isFinite(profile.followersCount) ? profile.followersCount : undefined,
 })
 
 const SEARCH_TTL_MS = 60_000
@@ -194,6 +197,30 @@ export const getPosts = async (uris) => {
     console.warn('[bluesky] getPosts failed:', err.message)
     return new Map()
   }
+}
+
+/**
+ * Somebody's own posts, newest first, for seeding a feed that the firehose can only fill going
+ * forward. `posts_no_replies` still includes reposts, which are somebody else's writing, so the
+ * caller drops anything whose author is not the account we asked about.
+ */
+export const authorFeed = async (did, { limit = 100, cursor = null, signal } = {}) => {
+  const data = await xrpc(
+    config.appviewUrl,
+    'app.bsky.feed.getAuthorFeed',
+    { actor: did, limit, cursor, filter: 'posts_no_replies' },
+    { signal, timeout: 10_000 },
+  )
+  const posts = (data.feed ?? [])
+    .filter((item) => !item.reason && item.post?.author?.did === did)
+    .map((item) => ({
+      uri: item.post.uri,
+      cid: item.post.cid ?? null,
+      createdAt: item.post.record?.createdAt ?? item.post.indexedAt,
+      isReply: Boolean(item.post.record?.reply),
+    }))
+    .filter((post) => post.uri && post.createdAt)
+  return { posts, cursor: data.cursor ?? null }
 }
 
 /** Where does this DID keep its repo? */

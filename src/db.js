@@ -79,7 +79,34 @@ db.exec(`
     k TEXT PRIMARY KEY,
     v TEXT NOT NULL
   );
+
+  -- Posts by the accounts in a feed, filled from the firehose and topped up by a backfill.
+  -- Replies are stored but not served, so the policy can change without refetching a year of
+  -- posts. is_reply means the record has a reply field; a quote post is not a reply.
+  CREATE TABLE IF NOT EXISTS feed_post (
+    uri        TEXT PRIMARY KEY,
+    did        TEXT NOT NULL,
+    cid        TEXT,
+    is_reply   INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    indexed_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS feed_post_did_idx ON feed_post (did);
+  CREATE INDEX IF NOT EXISTS feed_post_time_idx ON feed_post (created_at DESC, uri DESC);
+
+  -- Who is currently in each feed. Recomputed from the tally on a timer, so a feed follows the
+  -- vote without anything being republished to the network.
+  CREATE TABLE IF NOT EXISTS feed_member (
+    feed     TEXT NOT NULL,
+    did      TEXT NOT NULL,
+    added_at TEXT NOT NULL,
+    PRIMARY KEY (feed, did)
+  );
 `)
+
+// Added after the first release: follower counts decide who belongs in the Deep Cuts feed.
+const actorColumns = new Set(db.prepare('SELECT name FROM pragma_table_info(?)').all('actor').map((r) => r.name))
+if (!actorColumns.has('followers')) db.exec('ALTER TABLE actor ADD COLUMN followers INTEGER')
 
 // Only the first MAX_VOTES records on a ballot count, ordered by the record's own createdAt,
 // and only records created before voting closed. That way the tally is honest even for votes
@@ -259,13 +286,15 @@ export const totals = () => totalsStmt().get(bounds()) ?? { votes: 0, voters: 0,
 /* --------------------------------------------------------------- actors ---- */
 
 const upsertActorStmt = stmt(`
-  INSERT INTO actor (did, handle, display_name, avatar, description, fetched_at)
-  VALUES (?, ?, ?, ?, ?, ?)
+  INSERT INTO actor (did, handle, display_name, avatar, description, followers, fetched_at)
+  VALUES (?, ?, ?, ?, ?, ?, ?)
   ON CONFLICT (did) DO UPDATE SET
     handle = excluded.handle,
     display_name = excluded.display_name,
     avatar = excluded.avatar,
     description = excluded.description,
+    -- A profile fetch that came back without a count must not erase the one we have.
+    followers = COALESCE(excluded.followers, actor.followers),
     fetched_at = excluded.fetched_at
 `)
 
@@ -276,6 +305,7 @@ export const upsertActor = (actor) => {
     actor.displayName ?? null,
     actor.avatar ?? null,
     actor.description ?? null,
+    Number.isFinite(actor.followers) ? actor.followers : null,
     new Date().toISOString(),
   )
 }
@@ -293,6 +323,7 @@ export const getActors = (dids) => {
         displayName: row.display_name,
         avatar: row.avatar,
         description: row.description,
+        followers: row.followers,
         fetchedAt: row.fetched_at,
       },
     ]),
@@ -424,3 +455,133 @@ const getKvStmt = stmt('SELECT v FROM kv WHERE k = ?')
 
 export const setKv = (key, value) => setKvStmt().run(key, String(value))
 export const getKv = (key) => getKvStmt().get(key)?.v ?? null
+
+/* ---------------------------------------------------------------- feeds ---- */
+
+const upsertFeedPostStmt = stmt(`
+  INSERT INTO feed_post (uri, did, cid, is_reply, created_at, indexed_at)
+  VALUES (?, ?, ?, ?, ?, ?)
+  ON CONFLICT (uri) DO UPDATE SET
+    cid = excluded.cid,
+    is_reply = excluded.is_reply,
+    created_at = excluded.created_at
+`)
+const deleteFeedPostStmt = stmt('DELETE FROM feed_post WHERE uri = ?')
+
+export const upsertFeedPost = ({ uri, did, cid = null, isReply = false, createdAt }) => {
+  upsertFeedPostStmt().run(uri, did, cid, isReply ? 1 : 0, createdAt, new Date().toISOString())
+}
+
+export const deleteFeedPost = (uri) => deleteFeedPostStmt().run(uri).changes
+
+/** Replace a feed's roster in one transaction, so a reader never sees it half-built. */
+export const setFeedMembers = (feed, dids) => {
+  const now = new Date().toISOString()
+  const insert = db.prepare(
+    'INSERT INTO feed_member (feed, did, added_at) VALUES (?, ?, ?) ON CONFLICT (feed, did) DO NOTHING',
+  )
+  db.exec('BEGIN')
+  try {
+    if (dids.length === 0) {
+      db.prepare('DELETE FROM feed_member WHERE feed = ?').run(feed)
+    } else {
+      const holes = dids.map(() => '?').join(', ')
+      db.prepare(`DELETE FROM feed_member WHERE feed = ? AND did NOT IN (${holes})`).run(feed, ...dids)
+      for (const did of dids) insert.run(feed, did, now)
+    }
+    db.exec('COMMIT')
+  } catch (err) {
+    db.exec('ROLLBACK')
+    throw err
+  }
+}
+
+export const feedMembers = (feed) =>
+  db.prepare('SELECT did FROM feed_member WHERE feed = ? ORDER BY did').all(feed).map((r) => r.did)
+
+/** Every account we need posts for, across all feeds — the firehose subscription list. */
+export const allFeedMemberDids = () =>
+  db.prepare('SELECT DISTINCT did FROM feed_member ORDER BY did').all().map((r) => r.did)
+
+// A post's createdAt is whatever its author's client wrote, so it can be in the future. Ignoring
+// those keeps somebody from parking themselves at the top of the feed forever.
+const skeletonStmt = stmt(`
+  SELECT p.uri, p.created_at
+  FROM feed_post p
+  JOIN feed_member m ON m.did = p.did AND m.feed = :feed
+  LEFT JOIN nominee_profile np ON np.did = p.did
+  WHERE COALESCE(np.opted_out, 0) = 0
+    AND p.is_reply = 0
+    AND p.created_at <= :now
+    AND (
+      :cursor_time IS NULL
+      OR p.created_at < :cursor_time
+      OR (p.created_at = :cursor_time AND p.uri < :cursor_uri)
+    )
+  ORDER BY p.created_at DESC, p.uri DESC
+  LIMIT :limit
+`)
+
+export const feedSkeleton = (feed, { limit = 50, cursorTime = null, cursorUri = null } = {}) =>
+  skeletonStmt().all({
+    feed,
+    now: new Date().toISOString(),
+    limit,
+    cursor_time: cursorTime,
+    cursor_uri: cursorUri,
+  })
+
+// Counts what the feed would actually serve, so the admin page cannot report posts that no
+// reader can reach: same filters as the skeleton.
+export const feedPostCount = (feed) =>
+  db
+    .prepare(
+      `SELECT COUNT(*) AS c FROM feed_post p
+       JOIN feed_member m ON m.did = p.did AND m.feed = ?
+       LEFT JOIN nominee_profile np ON np.did = p.did
+       WHERE p.is_reply = 0 AND COALESCE(np.opted_out, 0) = 0 AND p.created_at <= ?`,
+    )
+    .get(feed, new Date().toISOString()).c
+
+/** Drop posts nobody can reach any more: not in a feed, or older than the window we serve. */
+export const pruneFeedPosts = (keepDays = 45) => {
+  const cutoff = new Date(Date.now() - keepDays * 86_400_000).toISOString()
+  const byAge = db.prepare('DELETE FROM feed_post WHERE created_at < ?').run(cutoff).changes
+  const byMember = db
+    .prepare('DELETE FROM feed_post WHERE did NOT IN (SELECT did FROM feed_member)')
+    .run().changes
+  return byAge + byMember
+}
+
+/**
+ * The Deep Cuts pool: nominated, outside the cut, lightly followed, and with more than one vote
+ * behind them — a single vote can be the account's own. Follower counts come from the profile
+ * cache, so an account we have never hydrated is left out rather than guessed at.
+ */
+const deepCutsStmt = stmt(`
+  ${ELIGIBLE},
+  ${RANKED}
+  SELECT r.did, r.votes, a.followers
+  FROM ranked r
+  JOIN actor a ON a.did = r.did
+  WHERE r.rank > :list_size
+    AND r.votes >= :min_votes
+    AND a.followers IS NOT NULL
+    AND a.followers < :max_followers
+  ORDER BY r.votes DESC, r.reached_at ASC, r.did ASC
+`)
+
+export const deepCutsPool = ({ minVotes, maxFollowers }) =>
+  deepCutsStmt().all({
+    ...bounds(),
+    list_size: config.listSize,
+    min_votes: minVotes,
+    max_followers: maxFollowers,
+  })
+
+/** Everyone with at least one counted vote — the accounts worth keeping follower counts for. */
+export const nomineeDids = () =>
+  db
+    .prepare(`${ELIGIBLE} SELECT did FROM tally ORDER BY votes DESC`)
+    .all(bounds())
+    .map((r) => r.did)

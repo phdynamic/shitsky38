@@ -78,12 +78,23 @@ export const config = {
     .split(',')
     .map((did) => did.trim())
     .filter(Boolean),
+  // Feeds. The service DID is a did:web on our own origin, so the only thing that has to exist
+  // on the network is one document we already serve. The feed's own name and picture live in a
+  // record in the owner's repo; who is *in* it is decided here, every few minutes.
+  feedsEnabled: env('FEEDS_ENABLED', '1') !== '0',
+  feedServiceDid: env('FEED_SERVICE_DID', `did:web:${publicUrl.hostname}`),
+  feedOwnerDid: env('FEED_OWNER_DID', ''),
+  deepCutsMaxFollowers: num('DEEP_CUTS_MAX_FOLLOWERS', 5000),
+  deepCutsMinVotes: num('DEEP_CUTS_MIN_VOTES', 2),
   privateKeys: ['PRIVATE_KEY_1', 'PRIVATE_KEY_2', 'PRIVATE_KEY_3']
     .map((key) => env(key, ''))
     .filter(Boolean)
     // PEMs are easier to carry through env vars with escaped newlines.
     .map((key) => key.replace(/\\n/g, '\n')),
 }
+
+// Whoever owns the feed records is the admin unless something says otherwise.
+if (!config.feedOwnerDid) config.feedOwnerDid = config.adminDids[0] ?? ''
 
 export const redirectUri = `${config.publicUrl}/oauth/callback`
 

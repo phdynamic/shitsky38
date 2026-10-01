@@ -489,3 +489,45 @@ footer p { margin: 0.4rem 0; }
   line-height: 1.55;
   color: var(--ink-dim);
 }
+
+/* ------------------------------------------------------------------ feeds -- */
+/* Only rendered once the generator records exist on the network, so these never
+   point at a feed that has not been published yet. */
+.feeds {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem 1.2rem;
+  margin-bottom: 2rem;
+  background: var(--bg-soft);
+}
+.feeds h2 { margin: 0 0 0.2rem; font-size: 1.15rem; }
+.feeds p { margin: 0 0 0.9rem; font-size: 0.9rem; }
+
+.feed-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+}
+.feed-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  text-decoration: none;
+  /* The whole card is the target, so it has to look like one at a glance. */
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.feed-card:hover { border-color: var(--accent); background: var(--bg-raised); }
+.feed-card b { font-size: 1rem; }
+.feed-card span { font-size: 0.85rem; color: var(--ink-dim); line-height: 1.4; }
+.feed-card em { font-style: normal; font-size: 0.85rem; color: var(--link); margin-top: 0.15rem; }
+
+.admin-feeds { margin: 1.5rem 0 2rem; }
+.admin-feeds h2 { font-size: 1.05rem; margin: 0 0 0.6rem; }
+.feed-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.feed-table td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.feed-table td:first-child { width: 55%; }
+.feed-table code { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-dim); word-break: break-all; }

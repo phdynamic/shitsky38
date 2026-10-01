@@ -114,6 +114,9 @@ or a `SIGN-IN IS BROKEN` line naming what is wrong.
 | `/admin/writeups` | edit the piece on each account inside the cut, and publish them to the leaderboard. Same gate |
 | `/api/leaderboard` | the standings as JSON |
 | `/lexicons` | the record schemas |
+| `/.well-known/did.json` | the feed service's `did:web` document |
+| `/xrpc/app.bsky.feed.describeFeedGenerator` | which feeds this service serves |
+| `/xrpc/app.bsky.feed.getFeedSkeleton` | the post URIs for one of them |
 
 ## Layout
 
@@ -127,11 +130,14 @@ src/
   ballot.js     casting, taking back, opting out — all of it writes to the repo first
   bluesky.js    AppView reads, profile cache, PDS resolution, listRecords
   jetstream.js  firehose consumer for com.shitsky38.*
+  feedmeta.js   each feed's name, blurb and picture — no database, so scripts can read it
+  feeds.js      who is in each feed, recomputed from the tally
+  feedingest.js a second firehose subscription, filtered to those accounts, plus the backfill
   secrets.js    cookie secret + OAuth keyset: env first, else minted and stored
-  routes/       auth.js · api.js · pages.js
+  routes/       auth.js · api.js · pages.js · admin.js · feeds.js
   views/        html.js (escaping template tag) · layout.js · pages.js
 public/         styles.css · app.js · favicon.svg · logo.png
-scripts/        keygen.js · backfill.js
+scripts/        keygen.js · backfill.js · publish-feeds.mjs
 ```
 
 ### The annotations
@@ -144,6 +150,37 @@ can see any of it; once on, each of the top entries on the front page carries it
 
 `node scripts/backfill.js [handle|did ...]` re-reads ballots straight from repos if the firehose
 consumer was ever down.
+
+### The feeds
+
+Two Bluesky custom feeds, served by this same app:
+
+- **Shitsky38** — everyone currently inside the cut.
+- **Shitsky38: Deep Cuts** — nominated, short of the cut, under `DEEP_CUTS_MAX_FOLLOWERS`
+  followers, with at least `DEEP_CUTS_MIN_VOTES` votes. A single vote can be the account's own,
+  which is why the floor is two.
+
+The service identifies itself as `did:web:<host>`, which resolves from `/.well-known/did.json`
+right here — no PLC operation, no key to rotate. A second Jetstream subscription, filtered to the
+accounts in the two rosters, keeps `feed_post` current; a one-off backfill of each new member's
+recent posts means a feed is never empty on its first day. Replies are stored but not served, so
+that policy can change without refetching anything. Posts dated in the future are ignored, and
+withdrawing from the list takes your posts out of the feeds as well as off the board.
+
+Rosters are recomputed every ten minutes — **until voting closes, after which they freeze.** The
+top 38 would settle anyway, because late votes never count; Deep Cuts would not, since follower
+counts keep moving, and nobody should drop off a list they qualified for.
+
+Publishing is manual and deliberate, because writing an `app.bsky.feed.generator` record needs a
+permission the site does not have and should not ask voters for:
+
+```
+npm run publish-feeds
+```
+
+It asks for a Bluesky app password, writes the two records, and forgets it — revoke the password
+afterwards. Re-run it only to change a feed's name, blurb or picture. Until the records exist the
+site advertises nothing: it checks what is actually published and only then draws the buttons.
 
 ## Not affiliated with Bluesky
 

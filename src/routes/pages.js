@@ -6,6 +6,8 @@ import { getPosts, hydrate, resolveHandle, toPostUri } from '../bluesky.js'
 import { syncBallotFromRepo, syncProfileFromRepo } from '../ballot.js'
 import { layout } from '../views/layout.js'
 import { publishedNotes } from '../writeups.js'
+import { liveFeeds, webUrl } from '../feeds.js'
+import { creator } from '../creator.js'
 import { faqPage, leaderboardPage, mePage, notFoundPage, profilePage, votePage } from '../views/pages.js'
 
 export const pagesRouter = Router()
@@ -37,6 +39,7 @@ pagesRouter.get('/', async (req, res) => {
       viewer,
       path: '/',
       body: leaderboardPage({
+        feeds: liveFeeds().map((feed) => ({ ...feed, url: webUrl(feed.key, creator().handle) })),
         entries,
         actors,
         stats,
