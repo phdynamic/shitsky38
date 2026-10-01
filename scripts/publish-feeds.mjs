@@ -40,6 +40,9 @@ const askSecret = (prompt) =>
     // Piped in rather than typed: there is no terminal echo to suppress.
     if (!input.isTTY) {
       const rl = createInterface({ input, terminal: false })
+      // close fires without a line when stdin is empty or already at EOF — resolving empty lets
+      // the caller say so and exit, rather than waiting on input that is never coming.
+      rl.once('close', () => resolve(''))
       rl.once('line', (line) => {
         rl.close()
         resolve(line.trim())
@@ -105,24 +108,57 @@ const resolvePds = async (did) => {
 
 const mimeOf = (path) => (path.endsWith('.png') ? 'image/png' : path.endsWith('.webp') ? 'image/webp' : 'image/jpeg')
 
+const LOOPBACK = ['127.0.0.1', 'localhost', '[::1]', '::1']
+
+/**
+ * Which deployment these records should point at.
+ *
+ * Deliberately *not* just `config.publicUrl`: this script is run from a working copy, whose .env
+ * points at a development server. Publishing from there would write two records naming
+ * did:web:127.0.0.1 — records that look fine locally and are permanently broken for everybody
+ * else. So a loopback target is refused outright and has to be named explicitly.
+ */
+const resolveTarget = () => {
+  const given = process.argv[2] || process.env.SITE_URL || ''
+  const raw = given || config.publicUrl
+  let url
+  try {
+    url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`)
+  } catch {
+    die(`Not a URL: ${JSON.stringify(raw)}`)
+  }
+  if (LOOPBACK.includes(url.hostname)) {
+    die(
+      `${url.origin} is a local address, and a feed has to be reachable from Bluesky.\n` +
+        `  Your .env points at the dev server, which is the right setting for development and the\n` +
+        `  wrong one here. Name the live site instead:\n\n` +
+        `      npm run publish-feeds https://shitsky38.com\n`,
+    )
+  }
+  // FEED_SERVICE_DID still wins if it is set, for a service hosted somewhere other than the site.
+  return { origin: url.origin, did: process.env.FEED_SERVICE_DID || `did:web:${url.hostname}` }
+}
+
 const main = async () => {
   if (!config.feedOwnerDid) die('No FEED_OWNER_DID or ADMIN_DIDS set — I do not know whose repo to write to.')
-  if (!config.feedServiceDid.startsWith('did:web:')) die(`FEED_SERVICE_DID should be a did:web, got ${config.feedServiceDid}`)
+
+  const target = resolveTarget()
+  if (!target.did.startsWith('did:web:')) die(`FEED_SERVICE_DID should be a did:web, got ${target.did}`)
 
   console.log(`\nPublishing ${feedKeys.length} feeds`)
-  console.log(`  served by   ${config.feedServiceDid}  (${config.publicUrl})`)
+  console.log(`  served by   ${target.did}  (${target.origin})`)
   console.log(`  listed from ${config.feedOwnerDid}\n`)
 
   // Check the service is actually reachable first: a record pointing at a dead endpoint shows up
   // in the app as a feed that forever fails to load.
   try {
-    const described = await json(`${config.publicUrl}/xrpc/app.bsky.feed.describeFeedGenerator`)
-    if (described.did !== config.feedServiceDid) {
-      die(`${config.publicUrl} says it is ${described.did}, not ${config.feedServiceDid}. Check PUBLIC_URL on the server.`)
+    const described = await json(`${target.origin}/xrpc/app.bsky.feed.describeFeedGenerator`)
+    if (described.did !== target.did) {
+      die(`${target.origin} says it is ${described.did}, not ${target.did}. Check PUBLIC_URL on the server.`)
     }
-    console.log(`✓ ${config.publicUrl} is serving the feed endpoints`)
+    console.log(`✓ ${target.origin} is serving the feed endpoints`)
   } catch (err) {
-    die(`${config.publicUrl} is not answering as a feed service (${err.message}).\n  Deploy first, then run this.`)
+    die(`${target.origin} is not answering as a feed service (${err.message}).\n  Deploy first, then run this.`)
   }
 
   const handle = process.env.BSKY_HANDLE || (await ask('Your Bluesky handle: '))
@@ -170,7 +206,7 @@ const main = async () => {
       rkey: key,
       record: {
         $type: 'app.bsky.feed.generator',
-        did: config.feedServiceDid,
+        did: target.did,
         displayName: meta.displayName,
         description: meta.description,
         ...(avatar ? { avatar } : {}),

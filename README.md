@@ -175,8 +175,12 @@ Publishing is manual and deliberate, because writing an `app.bsky.feed.generator
 permission the site does not have and should not ask voters for:
 
 ```
-npm run publish-feeds
+npm run publish-feeds https://shitsky38.com
 ```
+
+Name the live site. Left out, it falls back to `PUBLIC_URL`, which in a working copy is the dev
+server — and records naming `did:web:127.0.0.1` look fine locally while being permanently broken
+for everyone else, so a loopback target is refused outright.
 
 It asks for a Bluesky app password, writes the two records, and forgets it — revoke the password
 afterwards. Re-run it only to change a feed's name, blurb or picture. Until the records exist the
