@@ -73,6 +73,19 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes,
           </p>`}
     </section>
 
+    <section class="parody" role="note">
+      <p>
+        This is a parody website. It's riffing on
+        <a href="https://bsky38.com" rel="noopener">bsky38.com</a>. All $5 of the money I got from
+        donations went to keeping this site up. My apologies to
+        <a href="https://bsky.app/profile/dame.is" rel="noopener">@dame.is</a> and
+        <a href="https://bsky.app/profile/pds.dad" rel="noopener">@pds.dad</a> for being inspired to
+        make a poll for a small community of shitposters that is obviously a joke. And just to be
+        clear, none of their code was used in making this site. Thank you for your attention to this
+        matter.
+      </p>
+    </section>
+
     ${feeds.length
       ? html`<section class="feeds">
           <h2>Read them, don't just rank them</h2>
