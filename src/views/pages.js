@@ -42,7 +42,18 @@ const row = ({ entry, actor, viewer, voted, outOfVotes, note }) => html`<li clas
   <span class="tally"><b data-count="${entry.did}">${num(entry.votes)}</b><small>${entry.votes === 1 ? 'vote' : 'votes'}</small></span>
   ${voteButton({ did: entry.did, voted, disabled: outOfVotes, viewer })}
 </li>
-${note ? html`<li class="row-note">${note}</li>` : ''}`
+${note
+  ? html`<li class="row-note">
+      ${note.note ? html`<p>${note.note}</p>` : ''}
+      ${note.line
+        ? html`<blockquote>
+            ${note.source
+              ? html`<a href="${note.source}" rel="noopener">${note.line}</a>`
+              : note.line}
+          </blockquote>`
+        : ''}
+    </li>`
+  : ''}`
 
 /* ----------------------------------------------------------- leaderboard ---- */
 

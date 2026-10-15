@@ -31,6 +31,9 @@ export const loadWriteups = () => {
       generated: { note: entry.note, line: entry.line },
       note: edit?.note ?? entry.note,
       line: edit?.line ?? entry.line,
+      // The link points at the post the generated quote came from, so a quote rewritten by hand
+      // loses it rather than pointing somewhere that no longer says that.
+      source: edit?.line && edit.line !== entry.line ? null : (entry.source ?? null),
       hidden: edit?.hidden ?? false,
       edited: Boolean(edit?.note || edit?.line),
       editedAt: edit?.updatedAt ?? null,
@@ -46,10 +49,14 @@ export const loadWriteups = () => {
 export const isPublished = () => getKv(PUBLISHED_KEY) === '1'
 export const setPublished = (on) => setKv(PUBLISHED_KEY, on ? '1' : '0')
 
-/** did -> note, for the entries that should be shown publicly. */
+/** did -> { note, line, source }, for the entries that should be shown publicly. */
 export const publishedNotes = () => {
   if (!isPublished()) return new Map()
   const doc = loadWriteups()
   if (!doc) return new Map()
-  return new Map(doc.entries.filter((e) => !e.hidden && e.note).map((e) => [e.did, e.note]))
+  return new Map(
+    doc.entries
+      .filter((e) => !e.hidden && (e.note || e.line))
+      .map((e) => [e.did, { note: e.note, line: e.line, source: e.source }]),
+  )
 }

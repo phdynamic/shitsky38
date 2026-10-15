@@ -489,6 +489,21 @@ footer p { margin: 0.4rem 0; }
   line-height: 1.55;
   color: var(--ink-dim);
 }
+.row-note p { margin: 0; }
+
+/* One of their own posts, under the write-up. Set in their voice, not ours: quoted, a little
+   brighter than the note, and linking out to the post it was taken from. */
+.row-note blockquote {
+  margin: 0.5rem 0 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--gold);
+  color: var(--ink);
+  font-style: italic;
+}
+.row-note blockquote::before { content: '\201C'; }
+.row-note blockquote::after { content: '\201D'; }
+.row-note blockquote a { color: inherit; text-decoration: none; }
+.row-note blockquote a:hover { text-decoration: underline; text-underline-offset: 2px; }
 
 /* ------------------------------------------------------------------ feeds -- */
 /* Only rendered once the generator records exist on the network, so these never
