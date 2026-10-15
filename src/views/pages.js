@@ -63,14 +63,19 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes,
         <div><dt>voters</dt><dd>${num(stats.voters)}</dd></div>
         <div><dt>nominees</dt><dd>${num(stats.nominees)}</dd></div>
       </dl>
-      ${viewer
+      ${votingState() !== 'open'
         ? html`<p class="you-have">
-            You have used <b>${ballot.length}</b> of <b>${config.maxVotes}</b> votes.
-            <a href="/vote">Find someone to vote for →</a>
+            Voting is closed. This is how it finished.
+            ${viewer ? html`<a href="/me">See the ballot you cast →</a>` : ''}
           </p>`
-        : html`<p class="you-have">
-            <a class="btn" href="/login">Sign in with Bluesky</a> to cast your ${config.maxVotes} votes
-          </p>`}
+        : viewer
+          ? html`<p class="you-have">
+              You have used <b>${ballot.length}</b> of <b>${config.maxVotes}</b> votes.
+              <a href="/vote">Find someone to vote for →</a>
+            </p>`
+          : html`<p class="you-have">
+              <a class="btn" href="/login">Sign in with Bluesky</a> to cast your ${config.maxVotes} votes
+            </p>`}
     </section>
 
     <section class="parody" role="note">
@@ -90,8 +95,10 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes,
       ? html`<section class="feeds">
           <h2>Read them, don't just rank them</h2>
           <p class="muted">
-            Two feeds you can follow in the Bluesky app. They keep themselves up to date as the
-            vote moves.
+            Two feeds you can follow in the Bluesky app.
+            ${votingState() === 'open'
+              ? 'They keep themselves up to date as the vote moves.'
+              : 'The names are settled now, but the posts keep coming.'}
           </p>
           <div class="feed-cards">
             ${feeds.map(
@@ -106,10 +113,13 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes,
       : ''}
 
     <section class="find">
-      <h2>Vote for anybody on Bluesky</h2>
+      <h2>${votingState() === 'open' ? 'Vote for anybody on Bluesky' : 'Look anybody up'}</h2>
       <p class="muted">
-        Not just the accounts below — any account at all. Search a handle or a name, and press a vote
-        again to take it back.
+        ${votingState() === 'open'
+          ? html`Not just the accounts below — any account at all. Search a handle or a name, and press
+              a vote again to take it back.`
+          : html`Search a handle or a name to see where they finished — everybody who got a vote has a
+              page, not just the accounts below.`}
       </p>
       <form class="search" action="/vote" method="get" role="search">
         <input
@@ -163,14 +173,18 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes,
 
 export const votePage = ({ viewer, ballot, actors, withdrawn, query }) => html`
   <section class="hero narrow">
-    <h1>Cast your votes</h1>
+    <h1>${votingState() === 'open' ? 'Cast your votes' : 'Voting is closed'}</h1>
     <p class="lede">
-      Search any Bluesky account and vote for the ${config.maxVotes} whose posting you would defend in court.
-      Press a vote again to take it back.
+      ${votingState() === 'open'
+        ? html`Search any Bluesky account and vote for the ${config.maxVotes} whose posting you would
+            defend in court. Press a vote again to take it back.`
+        : html`No more votes can be cast. You can still look anybody up and see where they finished.`}
     </p>
   </section>
 
-  ${viewer
+  ${votingState() !== 'open'
+    ? ''
+    : viewer
     ? html`<section class="ballot-status">
         <b>${ballot.length}</b> of <b>${config.maxVotes}</b> votes used
         <span class="pips">${Array.from({ length: config.maxVotes }, (_, i) => html`<span class="pip ${i < ballot.length ? 'on' : ''}"></span>`)}</span>
