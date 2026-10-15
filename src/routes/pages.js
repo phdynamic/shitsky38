@@ -24,10 +24,11 @@ export const viewerOf = async (req) => {
 const send = (res, page) => res.type('html').send(page.toString())
 
 pagesRouter.get('/', async (req, res) => {
-  // topList() can run past LIST_SIZE when the cut is tied. Those accounts are still on the list
-  // and still carry their shared rank — the page just stops at LIST_SIZE rows and hands the
-  // remainder to Load more, so the leaderboard never scrolls past the number in its own title.
-  const entries = store.topList().slice(0, config.listSize)
+  // Everyone inside the cut, which runs past LIST_SIZE when the boundary is tied — a three-way
+  // tie for the last place makes a list of 39. Cutting it back to LIST_SIZE pushed whoever came
+  // last in that tie below Load more, where the page could not give them their annotation
+  // either. They polled their way onto the list, so they belong above the button with the rest.
+  const entries = store.topList()
   const viewer = await viewerOf(req)
   const ballot = req.viewerDid ? store.getBallot(req.viewerDid) : []
   const actors = await hydrate(entries.map((entry) => entry.did))

@@ -525,12 +525,6 @@ footer p { margin: 0.4rem 0; }
 .feed-card span { font-size: 0.85rem; color: var(--ink-dim); line-height: 1.4; }
 .feed-card em { font-style: normal; font-size: 0.85rem; color: var(--link); margin-top: 0.15rem; }
 
-.admin-feeds { margin: 1.5rem 0 2rem; }
-.admin-feeds h2 { font-size: 1.05rem; margin: 0 0 0.6rem; }
-.feed-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.feed-table td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
-.feed-table td:first-child { width: 55%; }
-.feed-table code { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-dim); word-break: break-all; }
 
 /* ----------------------------------------------------------------- parody -- */
 /* Deliberately the only gold-bordered block on the page: it has to read as an
@@ -555,3 +549,14 @@ footer p { margin: 0.4rem 0; }
   text-underline-offset: 2px;
 }
 .parody a:hover { text-decoration-thickness: 2px; }
+
+/* The audit page carries one control besides the search: take the write-ups back down. */
+.admin-publish {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  color: var(--ink-dim);
+}

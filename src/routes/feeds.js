@@ -1,7 +1,7 @@
 import express from 'express'
 import { config } from './../config.js'
 import * as store from './../db.js'
-import { FEED_META, feedKeys, feedUri, keyForUri } from './../feedmeta.js'
+import { feedKeys, feedUri, keyForUri } from './../feedmeta.js'
 
 export const feedsRouter = express.Router()
 
@@ -79,13 +79,3 @@ feedsRouter.get('/xrpc/app.bsky.feed.getFeedSkeleton', (req, res) => {
     feed: rows.map((row) => ({ post: row.uri })),
   })
 })
-
-/** What the owner needs to see on /admin: is each feed actually serving anything. */
-export const feedStatus = () =>
-  feedKeys.map((key) => ({
-    key,
-    uri: feedUri(key),
-    displayName: FEED_META[key].displayName,
-    members: store.feedMembers(key).length,
-    posts: store.feedPostCount(key),
-  }))

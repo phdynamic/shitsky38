@@ -80,14 +80,10 @@ export const leaderboardPage = ({ entries, actors, stats, viewer, ballot, notes,
 
     <section class="parody" role="note">
       <p>
-        This is a parody website. It's riffing on
-        <a href="https://bsky38.com" rel="noopener">bsky38.com</a>. All $5 of the money I got from
-        donations went to keeping this site up. My apologies to
+        This is a parody website, based on
+        <a href="https://bsky38.com" rel="noopener">bsky38.com</a>. Inspired by
         <a href="https://bsky.app/profile/dame.is" rel="noopener">@dame.is</a> and
-        <a href="https://bsky.app/profile/pds.dad" rel="noopener">@pds.dad</a> for being inspired to
-        make a poll for a small community of shitposters that is obviously a joke. And just to be
-        clear, none of their code was used in making this site. Thank you for your attention to this
-        matter.
+        <a href="https://bsky.app/profile/pds.dad" rel="noopener">@pds.dad</a>.
       </p>
     </section>
 
@@ -481,44 +477,15 @@ const auditList = (rows, actors, emptyText) =>
         })}
       </ul>`
 
-export const adminPage = ({ query, error, subject, nominee, standing, received = [], cast = [], actors, feeds = [] }) => html`
+export const adminPage = ({ query, error, subject, nominee, standing, received = [], cast = [], actors, published = false }) => html`
   <section class="hero narrow">
     <h1>Audit</h1>
-    <p class="lede">
-      Who voted for an account, and who that account voted for. Only you can see this page — everything on
-      it is public record either way.
-    </p>
   </section>
 
-  <p class="muted"><a href="/admin/writeups">The board, annotated →</a></p>
-
-  ${feeds.length
-    ? html`<section class="admin-feeds">
-        <h2>Feeds</h2>
-        <table class="feed-table">
-          <tbody>
-            ${feeds.map(
-              (feed) => html`<tr>
-                <td><b>${feed.displayName}</b><br /><code>${feed.uri}</code></td>
-                <td>${feed.members} account${feed.members === 1 ? '' : 's'}</td>
-                <td>${feed.posts} post${feed.posts === 1 ? '' : 's'}</td>
-                <td>
-                  ${feed.published
-                    ? html`<a href="${feed.url}" rel="noopener">live →</a>`
-                    : html`<span class="muted">not published yet</span>`}
-                </td>
-              </tr>`,
-            )}
-          </tbody>
-        </table>
-        ${feeds.every((feed) => feed.published)
-          ? ''
-          : html`<p class="muted">
-              Publish them with <code>npm run publish-feeds</code>. Until then nothing about them
-              shows on the front page.
-            </p>`}
-      </section>`
-    : ''}
+  <form class="admin-publish" action="/admin/writeups/publish" method="post">
+    <span>${published ? 'The write-ups are on the leaderboard.' : 'The write-ups are not published.'}</span>
+    <button class="btn danger" type="submit" ${published ? '' : 'disabled'}>Unpublish</button>
+  </form>
 
   <form class="search" action="/admin" method="get" role="search">
     <input

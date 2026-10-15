@@ -6,19 +6,6 @@ import { layout } from '../views/layout.js'
 import { adminPage, notFoundPage, writeupsPage } from '../views/pages.js'
 import { isPublished, loadWriteups, setPublished } from '../writeups.js'
 import { viewerOf } from './pages.js'
-import { feedStatus } from './feeds.js'
-import { liveFeeds, webUrl } from '../feeds.js'
-import { creator } from '../creator.js'
-
-/** Feed rows for the audit page: roster size, what is servable, and whether it is published. */
-const feedRows = () => {
-  const live = new Set(liveFeeds().map((feed) => feed.key))
-  return feedStatus().map((feed) => ({
-    ...feed,
-    published: live.has(feed.key),
-    url: webUrl(feed.key, creator().handle),
-  }))
-}
 
 export const adminRouter = Router()
 
@@ -44,7 +31,7 @@ adminRouter.get('/admin', async (req, res) => {
   if (!query) {
     return res
       .type('html')
-      .send(layout({ title: 'Audit', viewer, path: '/admin', body: adminPage({ query: '', feeds: feedRows() }) }).toString())
+      .send(layout({ title: 'Audit', viewer, path: '/admin', body: adminPage({ query: '', published: isPublished() }) }).toString())
   }
 
   let did = query.replace(/^@/, '')
@@ -57,7 +44,7 @@ adminRouter.get('/admin', async (req, res) => {
           title: 'Audit',
           viewer,
           path: '/admin',
-          body: adminPage({ query, error: `No account found for "${query}".` }),
+          body: adminPage({ query, error: `No account found for "${query}".`, published: isPublished() }),
         }).toString(),
       )
     }
@@ -73,6 +60,7 @@ adminRouter.get('/admin', async (req, res) => {
       viewer,
       path: '/admin',
       body: adminPage({
+        published: isPublished(),
         query,
         subject: actors.get(did) ?? { did },
         nominee: store.getNomineeProfile(did),
@@ -147,7 +135,14 @@ adminRouter.post('/admin/writeups', (req, res) => {
   res.json({ ok: true, edited: isEdit, hidden: nextHidden })
 })
 
+// A form sends strings, and the string "0" is truthy, so the value is read rather than coerced.
+const asFlag = (value) =>
+  value === true || value === 1 || ['1', 'true', 'on', 'yes'].includes(String(value ?? '').toLowerCase())
+
 adminRouter.post('/admin/writeups/publish', (req, res) => {
-  setPublished(Boolean(req.body?.publish))
-  res.json({ ok: true, published: isPublished() })
+  setPublished(asFlag(req.body?.publish))
+  // The editor posts JSON and stays where it is; the audit page posts a form and expects to land
+  // back on itself.
+  if (req.is('application/json')) return res.json({ ok: true, published: isPublished() })
+  res.redirect('/admin')
 })
