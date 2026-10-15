@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { config, isAdmin } from '../config.js'
+import { isAdmin } from '../config.js'
 import * as store from '../db.js'
 import { hydrate, resolveHandle } from '../bluesky.js'
 import { layout } from '../views/layout.js'
@@ -83,8 +83,10 @@ adminRouter.get('/admin/writeups', async (req, res) => {
       .send(layout({ title: 'Not found', viewer, path: '/admin', body: notFoundPage() }).toString())
   }
 
-  // Order by the board as it stands today, and say so when it has moved on.
-  const board = new Map(store.topList().slice(0, config.listSize).map((row) => [row.did, row]))
+  // Order by the board as it stands today, and say so when it has moved on. The whole cut, ties
+  // included — slicing to LIST_SIZE flagged whoever came last in a tied boundary as having left
+  // the list when they had not.
+  const board = new Map(store.topList().map((row) => [row.did, row]))
   const entries = doc.entries
     .map((entry) => ({ ...entry, ...(board.get(entry.did) ?? {}) }))
     .sort((a, b) => a.rank - b.rank || a.handle.localeCompare(b.handle))
