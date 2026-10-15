@@ -1,348 +1,357 @@
 {
- "generatedAt": "2026-09-30",
- "window": "Written from about a year of each account's public posts, read on 2026-09-30.",
+ "generatedAt": "2026-10-15",
+ "window": "Written from about a year of each account's public posts, read on 2026-10-15, after voting closed.",
  "entries": [
   {
    "did": "did:plc:dszgyni4f42kj24bukbkbvzj",
    "handle": "youremceekayvee.bsky.social",
-   "displayName": "EMCKAYVEE",
+   "displayName": "🎃EM-SCREAM-KAYVEE 🔪",
    "rank": 1,
-   "votes": 101,
-   "note": "Talks to the timeline like it's her kitchen and you're already sitting in it. One minute it's the guy in her DMs working up from inspirational reels to the flirty one, the next it's feminising band names into The Vulva Underground. Ran away with first place. Nobody's shocked.",
-   "line": "if you kiss at Olive Garden is that incest?"
+   "votes": 106,
+   "note": "A man asked how much she weighed and she ate him. Runs the bakery-pun desk (Maslow's Hierarchy of Kneads), the band-name-feminising desk (The Vulva Underground) and the period-store desk (Bloodbath & Beyond). Ran away with it.",
+   "line": "Last night, a man asked me how much I weigh. Folks, he was delicious."
   },
   {
    "did": "did:plc:6inp5yiltrxwaaysprylsihq",
    "handle": "gregthemiller.bsky.social",
    "displayName": "Greg the Miller",
    "rank": 2,
-   "votes": 82,
-   "note": "Invented the word wristlace and then simply would not let it go until the rest of us started saying it. It worked. Second place for a man whose entire operation is turning up under your post to say something deeply stupid.",
-   "line": "unlike you guys, i only suffer from posters gladness"
+   "votes": 88,
+   "note": "Star Trek puns, strong pasta opinions, and a standing request that you please use alt text. Throws out the mac and cheese because this is a linux and cheese household. Second place, and he'd like you all to lower your standards.",
+   "line": "perhaps today is a good day to pie"
   },
   {
    "did": "did:plc:eklnz5ml4ge3tnpj4cmkpbgm",
    "handle": "saltymactavish.bsky.social",
    "displayName": "Salty MacTavish",
    "rank": 3,
-   "votes": 63,
-   "note": "Will heckle you from the next stall over and then tell you he loves you. Has a fifteen-year crush on Michelle Obama and would like Barack not to find out.",
+   "votes": 68,
+   "note": "Describes this website as a bunch of people dealing with their shit by stringing pretty lights around a dumpster, which remains the kindest thing anyone has said about it. Swears beautifully, notices birds, cannot walk past a sugar maple without saying he'd tap that.",
    "line": "The only word I’ve said aloud today is fuck. But in 3 different octaves!"
   },
   {
    "did": "did:plc:ejgqchxkaixeq3gxarvlrfwo",
    "handle": "sixfeetofcandy.bsky.social",
    "displayName": "sweetie π",
-   "rank": 3,
-   "votes": 63,
-   "note": "Six feet of radioactive decay and candy, and the self-appointed mother of this website. Short jokes, dropped from height. Has told her dad Lindsey Graham died three separate times in one day and will do it again.",
+   "rank": 4,
+   "votes": 66,
+   "note": "Six feet of radioactive decay and candy, self-appointed mother of this website, and the subject of an HOA letter regarding the size of her crow army. Short jokes, dropped from a great height.",
    "line": "i saved thousands on my car insurance by returning to the sea"
+  },
+  {
+   "did": "did:plc:xccx7ujmsaolft6ukd2oakkx",
+   "handle": "dly.bsky.social",
+   "displayName": "Opinion Editor @ Bluesky",
+   "rank": 5,
+   "votes": 65,
+   "note": "Works at Bluesky. Posts like she's daring them to notice. Holds a fully worked-out position that the first layer of butter is only primer, and you must let it melt into the foundation before applying the real layer.",
+   "line": "started from the bottom, now we here (a new bottom)"
   },
   {
    "did": "did:plc:vc7f4oafdgxsihk4cry2xpze",
    "handle": "jcsalterego.bsky.social",
    "displayName": "Jerry Chen",
    "rank": 5,
-   "votes": 61,
-   "note": "Files dispatches from a Bluesky that doesn't exist. Leaked scoops, recovered patents, a late-night radio show where you're caller twelve, and the occasional announcement that he's retired and you should follow JerryVEVO. People keep replying seriously. He keeps going.",
-   "line": "caller 12 you’re on bluesky at night what’s on your mind"
-  },
-  {
-   "did": "did:plc:xccx7ujmsaolft6ukd2oakkx",
-   "handle": "dly.bsky.social",
-   "displayName": "Opinion Editor @ Bluesky",
-   "rank": 6,
-   "votes": 60,
-   "note": "Works at Bluesky. Posts like she's trying to get fired. Deletes the evidence afterwards, so the feed is basically a crime scene somebody keeps tidying.",
-   "line": "the boys are never coming back to town. the boys have been dead for 10 years."
-  },
-  {
-   "did": "did:plc:kkeacihunyez65quofylpjrj",
-   "handle": "los-los.bsky.social",
-   "displayName": "los 🦦",
-   "rank": 7,
-   "votes": 52,
-   "note": "A pun factory running three shifts and no safety inspections. How I Met Your Mordor. The meow in homeowner. Getting roasted by your kids is getting youthanized. He cannot stop and, frankly, should not.",
-   "line": "what if cats sense you’re dying a little inside and biscuits is just kitty cpr"
+   "votes": 65,
+   "note": "Holder of the \"oh i'm pretty sure that's just jerry spreading misinformation\" award, still defending the title. Calls spreadsheet people cellcels. Cyberbullies large accounts into using alt text, which is frankly a public service.",
+   "line": "yea i’ve got imposter syndrome. im poster"
   },
   {
    "did": "did:plc:6ixhocm5tk3fsqbclrbq36mf",
    "handle": "weeder.bsky.social",
    "displayName": "weeder",
    "rank": 7,
-   "votes": 52,
-   "note": "Gets annoyed at exactly the right things. Overnight oats are now a haunted house prop labelled “iced brains” and there's nothing anyone can do about it. Also wants the baking potatoes to explode and take the neighbourhood with them.",
-   "line": "God, grant me the courage to change the things I can and incredible new powers to change the things I can’t."
+   "votes": 54,
+   "note": "Found a sword stuck in a stone and told everybody. Invented governwoment. Correctly identifies overnight oats as a textural nightmare labelled \"iced brains\" in a haunted house.",
+   "line": "[horse meeting] We're getting a lot of good feedbag"
+  },
+  {
+   "did": "did:plc:kkeacihunyez65quofylpjrj",
+   "handle": "los-los.bsky.social",
+   "displayName": "los 🦦",
+   "rank": 7,
+   "votes": 54,
+   "note": "A pun machine with a cat problem. Gave us youthanized, the remoat, and Bean Me Up Biscotti. Privately suspects that when cats make biscuits on you they are performing kitty CPR.",
+   "line": "If you fart while wiping that’s called a dreamcatcher"
   },
   {
    "did": "did:plc:opytet572euebuzzufm4inyf",
    "handle": "amutepiggy.bsky.social",
-   "displayName": "alexis simpson",
+   "displayName": "alexis simpson is confused by display name changes",
    "rank": 9,
-   "votes": 45,
-   "note": "Convinced Tolkien ran out of dwarf names around clorgen and bloin. Will defend the low-effort post as an art form and then immediately post something excellent, which rather undermines the argument.",
-   "line": "“wow what a low effort post.” yes. exactly. it’s a post"
+   "votes": 47,
+   "note": "Filed an emergency bulletin about her four-year-old eating marshmallows dipped in ketchup. Will tell a chatbot to eat bee piss and then the bees. Describes her own posting energy as the short guy swinging wildly while a taller guy holds him off by the forehead.",
+   "line": "when life gives you demons, make demonade"
   },
   {
    "did": "did:plc:mm5ebihpjvtrdunomulbls5m",
    "handle": "ceej.online",
    "displayName": "ceej",
    "rank": 10,
-   "votes": 42,
-   "note": "Bio says “just here to have fun online.” Sir, you are extremely angry about four competing fascist movements. Also you invented the Slow Toads-Infused Shrimped Kraut Crumb Lump, so it checks out.",
-   "line": "I climbed up on my shed roof last week and installed a panel to charge my yard tools and now I’m mowing my lawn with power I stole from a fucking star"
-  },
-  {
-   "did": "did:plc:ha4gmmdxg6h2prjjltwwcmds",
-   "handle": "funkelly.bsky.social",
-   "displayName": "Fun",
-   "rank": 10,
-   "votes": 42,
-   "note": "Hockey, Netflix, and a perfect little run of ghost jokes where the haunting is just a crush. Will mute an all-time banger over missing alt text. Correct behaviour.",
-   "line": "ghosts only haunt you if you’re their crush"
+   "votes": 46,
+   "note": "Writes the long one, the one you read all the way down. Believes The Muppet Show should be a taxpayer-funded function of American culture. His wife asks whether he's going to post that one on Bluesky, in a tone he finds very hurtful.",
+   "line": "extremely bad time for an astronaut to find out he's a werewolf"
   },
   {
    "did": "did:plc:3ptit4iqakowozqvamzauimv",
    "handle": "twosense.bsky.social",
    "displayName": "TwoSense",
+   "rank": 10,
+   "votes": 46,
+   "note": "Mostly a pizza account, by her own description, then a run post, then something that makes you put your phone face down. Once forgot the word thirsty and had to improvise on the spot.",
+   "line": "(forgetting the word thirsty) I’m horny for some water."
+  },
+  {
+   "did": "did:plc:ha4gmmdxg6h2prjjltwwcmds",
+   "handle": "funkelly.bsky.social",
+   "displayName": "Fun",
    "rank": 12,
-   "votes": 40,
-   "note": "A pizza account that spent this entire contest loudly campaigning for Greg to beat her. Made the list anyway. Possibly the happiest person on the internet.",
-   "line": "Dear Bluesky Elders, Tell us stories of the days when Bluesky was fun."
+   "votes": 45,
+   "note": "Keeps one favourite visual joke in permanent rotation and thinks about it several times a week. Ends sentences with prepositions, who gives a fuck at. Has confirmed that banana bread fucks.",
+   "line": "end your sentences with prepositions, who gives a fuck at"
+  },
+  {
+   "did": "did:plc:6eneuye2a52t5hbbcaxo7n7h",
+   "handle": "mementomorty.bsky.social",
+   "displayName": "Memento (spooky) Morty 🌙",
+   "rank": 13,
+   "votes": 39,
+   "note": "A nurse, and spooky about it. Will explain what that breathing in the next room actually means and then ask whether the grim reaper is drunk. Called a sixty-seven-year-old patient girly pop and reported herself immediately.",
+   "line": "is the grim reaper fucking drunk or what"
   },
   {
    "did": "did:plc:2hwwem55ce6djnk6bn62cstr",
    "handle": "francesmeh.reviews",
-   "displayName": "Frances Meh",
-   "rank": 13,
+   "displayName": "Frances: Meh and Loving It",
+   "rank": 14,
    "votes": 38,
-   "note": "Already reviewed himself: used to be funny, now just gets mad about trade policy. He's being modest. Recently ranked his mutuals by mouthfeel, which is not a thing a normal person does.",
-   "line": "i’ve been going to a weekly support group called Hope but every once in a while they skip a week"
+   "note": "Toronto's leading reader of long manifestos about what's wrong with Bluesky, written by people who don't spend enough time here to know. Reminds you that any word in the original post can be used as a springboard for incoherent free association.",
+   "line": "i was a regifted child"
+  },
+  {
+   "did": "did:plc:qt4x3vjjrllbji532qk4yxig",
+   "handle": "steamymac.bsky.social",
+   "displayName": "Mr. Bea Arthur, Batshit Crazy™️",
+   "rank": 14,
+   "votes": 38,
+   "note": "Flaming dumpster extraordinaire, and the last man alive still offering the full Zima-and-Police-Academy-on-BetaMax date. Apologises for not being a better person on the grounds that this is what an entirely unsupervised child of the seventies and eighties looks like.",
+   "line": "I came here to make bad jokes and I am fuckin killing it."
   },
   {
    "did": "did:plc:ks3gpa6ftoyaq7hmf6c4qx4c",
    "handle": "dieworkwear.bsky.social",
    "displayName": "derek guy",
    "rank": 14,
-   "votes": 37,
-   "note": "Will explain, with genuine scholarship, why your brown tweed is not actually brown, and then tell you he dresses exclusively for dogs because they can't see the other colours. Six hundred thousand people turned up for menswear advice. They stayed for this.",
-   "line": "heartbroken to learn the pope sympathizes with the poor. how can i continue to believe in god"
+   "votes": 38,
+   "note": "The menswear guy. Arrived being right about tailoring and stayed to be right about most other things. Would like it on record that when they make the film of all this, the bad lapels should be part of the story.",
+   "line": "no greenlander ever called me a libtard"
   },
   {
    "did": "did:plc:nhytley6vv7tq6k2at6kvl5b",
    "handle": "im-all-id.me",
    "displayName": "andy vs.",
-   "rank": 14,
+   "rank": 17,
    "votes": 37,
-   "note": "Middling jokes and existential dread, sold together, no refunds. Every post is a small diagnosis you didn't ask for from a man who has been awake since 2am reading about uncontacted tribes.",
-   "line": "A group of people who refuse to get help is called a family"
-  },
-  {
-   "did": "did:plc:6eneuye2a52t5hbbcaxo7n7h",
-   "handle": "mementomorty.bsky.social",
-   "displayName": "Memento (artemis) Morty 🌙",
-   "rank": 16,
-   "votes": 36,
-   "note": "A black cat who loves horror, definitely not a witch, lifts heavy things. The Home Depot skeletons have unionised and are fighting for bonefits. There is a cat checkpoint and the toll is one pspsps.",
-   "line": "Pour one out for all the guys who can’t talk to their girlfriends because ChatGPT is down"
-  },
-  {
-   "did": "did:plc:qt4x3vjjrllbji532qk4yxig",
-   "handle": "steamymac.bsky.social",
-   "displayName": "Mr. Bea Arthur, Batshit Crazy™️",
-   "rank": 16,
-   "votes": 36,
-   "note": "Describes himself as a flaming dumpster and then works very hard to earn it. Eight straight days in bed, rebranded as beast mode. Currently dating a glazed ham. Genuinely thrilled that nobody cares what he says.",
-   "line": "The enemy of my enemy is probably still my enemy, a lot of people don’t like me."
+   "note": "Middling jokes and existential dread, per his own bio, which undersells both. Wants ten-factor authentication so he can never sign into anything again, and to go to sleep on the floor instead of circling back.",
+   "line": "I'm not negative. I'm chaotic positive"
   },
   {
    "did": "did:plc:ljb5o7ltqkol72dxn33dlvrj",
    "handle": "trickykat.bsky.social",
-   "displayName": "trickykat",
+   "displayName": "trick-is-a-treat-kat",
    "rank": 18,
-   "votes": 35,
-   "note": "Turns up in your replies at 3am in lowercase with a pun you'll be annoyed about for the rest of the week. The first rule of spite club is we cut our noses.",
-   "line": "people should post less whiny and more whimsy"
+   "votes": 34,
+   "note": "Puts Tums on her pizza to save time. Hosts parties for introverts where you bring your own noise-cancelling headphones and a Kindle. Thinks people should post less whiny and more whimsy, then goes and does it.",
+   "line": "i do not think therefore i do not am"
   },
   {
    "did": "did:plc:o5exgt6gniampdauygxutzq7",
    "handle": "viktorwinetrout.bsky.social",
    "displayName": "Viktor Winetrout",
-   "rank": 19,
-   "votes": 32,
-   "note": "Writes jokes the way other people build IKEA furniture, except his don't wobble. The serenity prayer, but he wants a horse that solves crimes. The Onion pays him and he is still underpriced.",
-   "line": "God, grant me the serenity to accept the things I cannot change, courage to change the things I can, and a horse that solves crimes"
+   "rank": 18,
+   "votes": 34,
+   "note": "Writes the kind of joke that comes with its own stage directions. Has established that Frankenstein is a metaphor for the dangers of reanimating corpses with electricity, and that Jaws is, more than anything, a metaphor about being attacked by a shark.",
+   "line": "Shall I compare thee to a fucking jerk"
   },
   {
    "did": "did:plc:znk2yyr5csq3vbevk4wjgzul",
    "handle": "frovo.bsky.social",
-   "displayName": "Frovo",
+   "displayName": "FR🎃 V🎃",
    "rank": 20,
-   "votes": 31,
-   "note": "Does two-handers like it's sketch homework he actually finished. Peter Parker, Mary Jane, a dead uncle named Ben, and then she's singing Barenaked Ladies. You saw it coming. It got you anyway.",
-   "line": "ME: pack a bag, we’re flying to kansas MY WAYWARD SON: what kind of bag"
+   "votes": 33,
+   "note": "Writes entirely in ALL-CAPS DIALOGUE and essentially never misses. Responsible for geollo, for superbar, and for the discovery that Rome wasn't built in a day, Rome was built in Italy.",
+   "line": "YOU: (wise) rome wasn’t built in a day ME: (wiser) rome was built in italy"
   },
   {
    "did": "did:plc:kz7qpoj4lgmpfdiijbkuopvn",
    "handle": "lefttwix.com",
-   "displayName": "key",
+   "displayName": "(spoo)key",
    "rank": 21,
-   "votes": 30,
-   "note": "Hockey, filth, and a goaltender called Bussi whose every conceded goal she treats as a personal gift. Knows exactly what this site is doing to her. Logging on regardless.",
-   "line": "therapist: and what should we do when we’re feeling this way? me: keep posting 🙂‍↕️"
+   "votes": 32,
+   "note": "Voted most likely to let it linger, and has never once let it go since. Whispers that she's still punk while turning the music down in the car so she can see better.",
+   "line": "i’m like if a baby became an adult"
   },
   {
    "did": "did:plc:qlthadyzantd4k55gyz4tceu",
    "handle": "potshopboy.bsky.social",
-   "displayName": "Pot Shop Boy",
+   "displayName": "Pot Shop Boo",
    "rank": 22,
-   "votes": 28,
-   "note": "Mostly turns up in your replies to be nice to you. Then, with no warning whatsoever, says something that guts you. Rude, honestly.",
-   "line": "I should learn how to heal without scabbing over."
-  },
-  {
-   "did": "did:plc:ux34natbhxube3xgdu3rhf45",
-   "handle": "internethippo.bsky.social",
-   "displayName": "Better Things Are Possible",
-   "rank": 23,
-   "votes": 27,
-   "note": "Named himself Better Things Are Possible and now spends every day explaining why they currently aren't. Bleak! Very funny though. Reports that Socrates looked like a beluga whale and still had game.",
-   "line": "Going to work now feels like doing homework after the teacher quit and told the class that education is fake."
+   "votes": 31,
+   "note": "This is his brain on drugs, no questions at this time. Deals mainly in the quiet observation — night bugs go toward the light because they're trying to read their little books.",
+   "line": "Banger? I hardly poster!"
   },
   {
    "did": "did:plc:kvec6rzfk4af2gjfiu33ccf2",
    "handle": "beaveinflow.bsky.social",
    "displayName": "BEAVE",
-   "rank": 24,
-   "votes": 26,
-   "note": "Spokesperson for beavers. Insists you take every word seriously. HR has asked him to stop calling his coworkers mortals, which he considers discrimination against high deities. Campaigned shamelessly for this list, which honestly is the correct attitude.",
-   "line": "Heartburn is your body quietly preparing you for your final form as a fire-breathing dragon with terrible gastrointestinal health."
-  },
-  {
-   "did": "did:plc:kpnkmducrwtq3ly4miy3ymoe",
-   "handle": "azedand2knots.bsky.social",
-   "displayName": "chris.",
-   "rank": 25,
-   "votes": 25,
-   "note": "HORRORS AND HOT DOGS, USUALLY IN CAPITALS, LIKE A HAUNTED SUPERMARKET TANNOY. God has turned up to ask Margaret what in the holy fuck is going on down there, and nobody has an answer.",
-   "line": "Not a manic pixie dream girl, but a lethargic troll nightmare woman."
+   "rank": 23,
+   "votes": 30,
+   "note": "Spokesperson for beavers. Spent sixty dollars on flowers for one hummingbird and is now financially and emotionally entangled with a flying sugar addict called Pedro, who chirps at her relentlessly and expects a bath.",
+   "line": "Doomscrolling is out. Bloomscrolling is in."
   },
   {
    "did": "did:plc:qzuw62ra5pgoy7ohoaj4gd7v",
    "handle": "darthbluesky.bsky.social",
    "displayName": "darth™️",
+   "rank": 24,
+   "votes": 29,
+   "note": "Logs on, asks what he missed, and would like to be told every thing. Runs the live commentary the rest of the site reads over his shoulder, which more often than not ends in lol.",
+   "line": "hello what did i miss tell me every thing"
+  },
+  {
+   "did": "did:plc:ux34natbhxube3xgdu3rhf45",
+   "handle": "internethippo.bsky.social",
+   "displayName": "Better Things Are Possible",
    "rank": 25,
-   "votes": 25,
-   "note": "All lowercase, “tbh” used as punctuation, watching the same news as you but saying it four seconds sooner. Then he'll stop everything to ask what single item a junk drawer legally requires to qualify as a junk drawer.",
-   "line": "in your next zoom interview have not only a cup of ice coffee but seven or eight different cups of various beverages just off camera and casually drink from each"
+   "votes": 28,
+   "note": "Can take a paragraph of the news and hand it back as a line you repeat for a week. Has observed that congress is the model UN and should be issued legos and a propeller hat.",
+   "line": "Yeah I'd like to get laid... laid to rest!"
   },
   {
-   "did": "did:plc:6ljac3gxzqxy56fhx7qu3jqd",
-   "handle": "batkaren.bsky.social",
-   "displayName": "batkaren",
-   "rank": 27,
-   "votes": 24,
-   "note": "Her mom fucked a bat. Everything after that follows logically. Slips into something more comfortable by walking into the ocean, bursts into bats while denying being a witch, and is cheerful throughout.",
-   "line": "“All those moments will be lost in time, like cum in the rain…”"
+   "did": "did:plc:hd45ud24roeoli4qe7ot24e3",
+   "handle": "sofarrsogud.bsky.social",
+   "displayName": "FᎪᎢ ᏩᎪNᎠᎪᏞF",
+   "rank": 25,
+   "votes": 28,
+   "note": "Irish, and constitutionally unable to stop. Gets tazed by the same long-suffering zookeeper every week for shouting bananaconda, and his wife says Get out! at roughly the rate he posts.",
+   "line": "J.R.R. Tolkien's full name was Jonathan Ronathan Rolkien Tolkien"
   },
   {
-   "did": "did:plc:bgwoouqx463ponaj5f4wy5y2",
-   "handle": "kattsdogma.bsky.social",
-   "displayName": "",
+   "did": "did:plc:kpnkmducrwtq3ly4miy3ymoe",
+   "handle": "azedand2knots.bsky.social",
+   "displayName": "chris.",
    "rank": 27,
-   "votes": 24,
-   "note": "Has one format and has driven it into places it had no business surviving — is it cum, is it a toilet, is it be dead, is it waking up. Delivers everything in the voice of a nan telling a story she's told before, complete with 😬.",
-   "line": "just like you guys, i put my pants on one leg at a time, leaning against a wall, losing my balance, falling to my knees, yelling “FUCK”"
+   "votes": 26,
+   "note": "Horrors and hot dogs, usually in capitals, usually directed at someone named Kevin. Not a manic pixie dream girl but a lethargic troll nightmare woman, which is a considerably better thing to be.",
+   "line": "There is no next year, only Zuul."
   },
   {
    "did": "did:plc:gyuvrzxt4plzvqybm7wx3ruj",
    "handle": "nahyoudoit.bsky.social",
    "displayName": "Forrest Plump",
    "rank": 27,
-   "votes": 24,
-   "note": "Empty inside, full-figured outside, warmest person here by a mile. Rewrote Dylan Thomas in eleven words. Turned her own divorce anniversary into a thread where everyone else got to feel good.",
-   "line": "Do not go willy into that good nilly"
+   "votes": 26,
+   "note": "Empty inside, full-figured outside. Specialises in following something tender about home being where you know the shower settings with something you absolutely cannot read out at work.",
+   "line": "Anything you can do, I can do bitter."
   },
   {
-   "did": "did:plc:hd45ud24roeoli4qe7ot24e3",
-   "handle": "sofarrsogud.bsky.social",
-   "displayName": "FᎪᎢ ᏩᎪNᎠᎪᏞF",
+   "did": "did:plc:6ljac3gxzqxy56fhx7qu3jqd",
+   "handle": "batkaren.bsky.social",
+   "displayName": "batkaren",
    "rank": 27,
-   "votes": 24,
-   "note": "Keeps getting tasered by a zookeeper for shouting puns too loudly, which is the recurring bit and also, one suspects, a documentary. Eagles are talonted. Pythons are wraptiles. There is a Superman prequel called Jurassic Clark.",
-   "line": "If a baby hands you a toy telephone to answer, that’s a sign of great respect in their culture."
+   "votes": 26,
+   "note": "Submits to The New Yorker several times a week by posting a caption and announcing This is the one, The New Yorker! The maddening part is that it usually is the one.",
+   "line": "“Hahaha, of course I’m not a witch,” I laugh, then sneeze and burst into a dozen bats."
   },
   {
-   "did": "did:plc:2p73aps4rcx72kako2lkgfqp",
-   "handle": "alldolledup44.bsky.social",
-   "displayName": "Jenn 🩷",
-   "rank": 31,
-   "votes": 23,
-   "note": "Feral, foul-mouthed, lifts weights, does hair, and is genuinely losing it over a bird in her bird bath. Delighted when rich men's rockets explode. Says good morning with a pink heart twenty minutes later.",
-   "line": "It’s a motherfucking bird in my motherfucking bird bath! These are the things you find exciting when you’re 45."
-  },
-  {
-   "did": "did:plc:6bfobt7ssw6scat2h3uzvg25",
-   "handle": "badposter.lol",
-   "displayName": "Skip, the Online Raccoon",
-   "rank": 31,
-   "votes": 23,
-   "note": "A raccoon with a personal vendetta against Ed Sheeran. Will sell out instantly and tell you the going rate. Points out the engagement bait while being the engagement bait, so there is genuinely no way to get him.",
-   "line": "hating on me is just a weak attempt at engagement bait"
-  },
-  {
-   "did": "did:plc:awyncbnck2xzf4obkdqep7ms",
-   "handle": "itsabbyyep.bsky.social",
-   "displayName": "It's Abby. Yep",
-   "rank": 31,
-   "votes": 23,
-   "note": "“she/her • i hat typos” and she has not fixed it. Every post is a bad idea presented as practical advice. The dik-dik is perfect. Everything else is not.",
-   "line": "Live every day like it’s your last. Key a cop car. Eat five hot dogs. Call your boss a taint. Who cares anymore?"
-  },
-  {
-   "did": "did:plc:vpmsy4e75xl5iglu6677semw",
-   "handle": "lithiumsucks.bsky.social",
-   "displayName": "strange ranger",
-   "rank": 31,
-   "votes": 23,
-   "note": "Co-owned by two cats. Furious at anti-vaxxers one minute, posting an upside-down floof as a timeline cleanse the next. Has explained the whole thing better than anyone else could.",
-   "line": "We have two settings: 1) Silly 2) Crushed under the weight of crippling depression"
-  },
-  {
-   "did": "did:plc:d2tt2ajbjq6aumjdde46adz3",
-   "handle": "darthputinkgb.bsky.social",
-   "displayName": "Darth Putin",
-   "rank": 35,
-   "votes": 22,
-   "note": "Czar for life, master strategist, window installer, wanted in 123 countries. Still reporting live from day 1,391 of his three-day war. The bio says “parody, apparently” and you can hear the sigh.",
-   "line": "Do not believe anything until the Kremlin denies it™️"
-  },
-  {
-   "did": "did:plc:udcx3wq52wbwfibycirmso3t",
-   "handle": "maidofbeans.bsky.social",
-   "displayName": "Jane, actually",
-   "rank": 35,
-   "votes": 22,
-   "note": "Would help lift your spirits but she's got a bad back. Specialises in threats delivered very pleasantly, and in being sincerely unhinged about how much she loves dogs.",
-   "line": "“Measure twice, cut once,” I grunt, as I realise your legs won’t fit in the freezer."
-  },
-  {
-   "did": "did:plc:7dhu7fj5aworemiukqwpq6ed",
-   "handle": "tuskjenkins.bsky.social",
-   "displayName": "Tusk Jenkins",
-   "rank": 35,
-   "votes": 22,
-   "note": "Posts like a voicemail from someone not entirely sure they've got the right number. The moon told him to stop crying and start metal detecting. He once carried a barstool into the woods to gesture at the road less travelled. Twenty-two people knew what they were doing.",
-   "line": "Don’t ever let anyone tell you where your wires go. You’ve got the perfect maze of loops and decoys already"
+   "did": "did:plc:bgwoouqx463ponaj5f4wy5y2",
+   "handle": "kattsdogma.bsky.social",
+   "displayName": "",
+   "rank": 30,
+   "votes": 25,
+   "note": "Has run the is-it-a-tomato-it's-a-tomato-isn't-it format directly into the ground and keeps turning up new ground underneath. Also awake at 3:56am working out that Roseanne Barr marrying Jeffrey Epstein would make her Roseanne Epstein-Barr.",
+   "line": "is it a tomato, it’s a tomato isn’t it"
   },
   {
    "did": "did:plc:mkkvzj3q3pegqam2n7yuxbwy",
    "handle": "ygrene.bsky.social",
    "displayName": "Ygrene",
-   "rank": 35,
+   "rank": 30,
+   "votes": 25,
+   "note": "Wrote the one about the human body not being designed to know what the worst person in the world is doing every fifteen minutes, then went straight back to being murdered in a kitchen he had only just mopped.",
+   "line": "sometimes, if you’re up early enough, you can hear them turn the birds on"
+  },
+  {
+   "did": "did:plc:awyncbnck2xzf4obkdqep7ms",
+   "handle": "itsabbyyep.bsky.social",
+   "displayName": "It's Abby. Yep",
+   "rank": 32,
+   "votes": 24,
+   "note": "Deals in the sentence that lands before you've finished reading it. Would like a Disney princess who is older, cranky sometimes but nice, swears a lot and is — fine, yes — her.",
+   "line": "The world is broken but the dik-dik is perfect"
+  },
+  {
+   "did": "did:plc:2p73aps4rcx72kako2lkgfqp",
+   "handle": "alldolledup44.bsky.social",
+   "displayName": "Careful, Jenn Bites 🧛🏻‍♀️🩷🧛🏻‍♀️",
+   "rank": 33,
+   "votes": 23,
+   "note": "Signs off with Good morning! 🤍 directly after saying something that ought to require a licence. Currently seeking someone to feed her enchiladas whilst making airplane noises. No weirdos.",
+   "line": "One time, I had a man tell me I was mouthy so I ate him."
+  },
+  {
+   "did": "did:plc:vpmsy4e75xl5iglu6677semw",
+   "handle": "lithiumsucks.bsky.social",
+   "displayName": "strange ranger",
+   "rank": 33,
+   "votes": 23,
+   "note": "Posts a cat when the timeline needs a cat, a song when it needs a song, and otherwise the driest line available. Reports being at the age where you can gravely injure yourself walking in a straight line on level ground.",
+   "line": "Like sands through the hourglass, these are the stupidest fucking days of our lives."
+  },
+  {
+   "did": "did:plc:6bfobt7ssw6scat2h3uzvg25",
+   "handle": "badposter.lol",
+   "displayName": "Skip, the Online New Yorker (terrifying, i know)",
+   "rank": 33,
+   "votes": 23,
+   "note": "Got a family-size pack of chicken for ten cents because somebody keyed in the weight wrong, and told everyone immediately. Once brought an entire pot roast to a job interview and ate it while they went through his resume.",
+   "line": "vegans can’t be president, there’s too much at steak"
+  },
+  {
+   "did": "did:plc:7dhu7fj5aworemiukqwpq6ed",
+   "handle": "tuskjenkins.bsky.social",
+   "displayName": "Tusk Jenkins",
+   "rank": 33,
+   "votes": 23,
+   "note": "Posts like a transmission from somewhere just left of here. Works in IT, is also a life coach, is also a minotaur. Builds sentences that have no business working and then they do.",
+   "line": "Only wink wink can nudge nudge me"
+  },
+  {
+   "did": "did:plc:udcx3wq52wbwfibycirmso3t",
+   "handle": "maidofbeans.bsky.social",
+   "displayName": "Jane, actually",
+   "rank": 37,
    "votes": 22,
-   "note": "Runs a gentle little universe where the killbot politely offers to murder you or make a smoothie, and you should throw a bit of cheese on the oven floor for the oven, as a treat. Has not been mean once.",
-   "line": "hey, remember: don’t eat anything and don’t breathe"
+   "note": "Turned up in August and was immediately at home. Freezes leftover soup in an ice cream tub for the express purpose of setting an emotional trap for her future self.",
+   "line": "There's never a falling anvil around when you need one."
+  },
+  {
+   "did": "did:plc:d2tt2ajbjq6aumjdde46adz3",
+   "handle": "darthputinkgb.bsky.social",
+   "displayName": "Darth Putin",
+   "rank": 37,
+   "votes": 22,
+   "note": "Czar for life, master strategist, window installer, wanted in a hundred and twenty-three countries. Has now been fighting a three-day war for fifty-two months and files every update himself, perfectly deadpan.",
+   "line": "I remain a master strategist."
+  },
+  {
+   "did": "did:plc:gkhlgiv6hsui5gqyye2zrbd3",
+   "handle": "britculpsapp.bsky.social",
+   "displayName": "👻👹 boo-rit 👹👻",
+   "rank": 37,
+   "votes": 22,
+   "note": "The newest name on the board. Runs largely on reaction — the screenshot plus four words that make it funnier than it had any right to be — and loves catching other people's arguments in her feed.",
+   "line": "christ if that’s not a metaphor for our times"
   }
  ]
 }
